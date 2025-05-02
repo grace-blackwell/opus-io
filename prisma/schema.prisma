@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  accountId           String?
+  email               String               @unique
+  firstName           String
+  lastName            String
+  avatarUrl           String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  Address             Address?
+  Account             Account?
+
+  @@index([accountId])
+}
+
+model Account {
+  id                  String               @id @default(uuid())
+  connectedAccountId  String?              @default("")
+  logo                String
+  whiteLabel          Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  userId              String               @unique
+  User                User                 @relation(fields: [userId], references: [id])
+  Subscription        Subscription?
+  Media               Media[]
+  Notifications       Notification[]
+  SidebarOption       SidebarOption[]
+
+  @@index([userId])
+}
+
+model Address {
+  id                  String               @id @default(uuid())
+  userId              String               @unique
+  address             String               @default("")
+  city                String               @default("")
+  state               String               @default("")
+  zipCode             String               @default("")
+  country             String               @default("")
+  User                User                 @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model SidebarOption {
+  id                  String                 @id @default(uuid())
+  name                String                 @default("Menu")
+  link                String                 @default("#")
+  icon                String                 @default("info")
+  accountId           String                 @unique
+  Account             Account                @relation(fields: [accountId], references: [id])
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  @@index([accountId])
+}
+
+model Media {
+  id                  String               @id @default(uuid())
+  type                String?
+  name                String
+  link                String               @unique
+  accountId           String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  Account             Account              @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+}
+
+model Subscription {
+  id                   String               @id @default(uuid())
+  plan                 String
+  price                String?
+  active               Boolean              @default(false)
+  priceId              String
+  accountId            String               @unique
+  currentPeriodEndDate DateTime
+  subscriptionId       String               @unique
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  Account              Account              @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+}
+
+model Notification {
+  id                  String                @id @default(uuid())
+  notification        String
+  accountId           String
+  Account             Account               @relation(fields: [accountId], references: [id])
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@index([accountId])
+}

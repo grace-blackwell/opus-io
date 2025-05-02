@@ -1,0 +1,107 @@
+/* Force light mode for QuickBooks style generator */
+.quickbooks-invoice {
+  /* Light mode background colors */
+  --background: #ffffff !important;
+  --foreground: #000000 !important;
+  --card: #ffffff !important;
+  --card-foreground: #000000 !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #000000 !important;
+  --primary: #0073e6 !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #f5f8fa !important;
+  --secondary-foreground: #000000 !important;
+  --muted: #f5f8fa !important;
+  --muted-foreground: #71717a !important;
+  --accent: #f5f8fa !important;
+  --accent-foreground: #000000 !important;
+  --destructive: #ff0000 !important;
+  --destructive-foreground: #ffffff !important;
+  --border: #e2e8f0 !important;
+  --input: #ffffff !important;
+  --ring: #0073e6 !important;
+  
+  /* Force light mode text */
+  color-scheme: light !important;
+  color: #000000 !important;
+  background-color: #f5f8fa !important;
+}
+
+.quickbooks-invoice * {
+  color-scheme: light !important;
+}
+
+/* Override any dark mode styles */
+.dark .quickbooks-invoice,
+.dark .quickbooks-invoice * {
+  color-scheme: light !important;
+}
+
+.quickbooks-invoice .bg-card {
+  background-color: #ffffff !important;
+}
+
+.quickbooks-invoice .text-foreground {
+  color: #000000 !important;
+}
+
+.quickbooks-invoice .text-muted-foreground {
+  color: #71717a !important;
+}
+
+.quickbooks-invoice .border {
+  border-color: #e2e8f0 !important;
+}
+
+.quickbooks-invoice input,
+.quickbooks-invoice textarea,
+.quickbooks-invoice select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.quickbooks-invoice button {
+  color-scheme: light !important;
+}
+
+/* Ensure popover and sheet components also use light mode */
+.quickbooks-invoice-popover,
+.quickbooks-invoice-sheet {
+  color-scheme: light !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  --background: #ffffff !important;
+  --foreground: #000000 !important;
+  --card: #ffffff !important;
+  --card-foreground: #000000 !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #000000 !important;
+  --primary: #0073e6 !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #f5f8fa !important;
+  --secondary-foreground: #000000 !important;
+  --muted: #f5f8fa !important;
+  --muted-foreground: #71717a !important;
+  --accent: #f5f8fa !important;
+  --accent-foreground: #000000 !important;
+  --destructive: #ff0000 !important;
+  --destructive-foreground: #ffffff !important;
+  --border: #e2e8f0 !important;
+  --input: #ffffff !important;
+  --ring: #0073e6 !important;
+}
+
+.quickbooks-invoice-popover *,
+.quickbooks-invoice-sheet * {
+  color-scheme: light !important;
+}
+
+.dark .quickbooks-invoice-popover,
+.dark .quickbooks-invoice-sheet,
+.dark .quickbooks-invoice-popover *,
+.dark .quickbooks-invoice-sheet * {
+  color-scheme: light !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
