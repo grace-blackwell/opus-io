@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Client, Project, Invoice } from "@prisma/client"
+import { Contact, Project, Invoice } from "@prisma/client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -16,10 +16,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from "zod"
 import { Button } from "@/components/ui/button";
 import Loading from "@/components/global/loading";
-import { v4 } from "uuid";
 import { useModal } from "@/providers/modal-provider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, addDays } from 'date-fns';
+import {nanoid} from "nanoid";
 
 const customInputStyles = {
     background: 'var(--input)',
@@ -29,7 +29,7 @@ const customInputStyles = {
 
 type Props = {
     accountId: string | null,
-    clientId?: string | null,
+    contactId?: string | null,
     projectId?: string | null,
     invoice?: Invoice
 }
@@ -37,9 +37,9 @@ type Props = {
 const FormSchema = z.object({
     invoiceDate: z.string(),
     dueDate: z.string(),
-    paymentStatus: z.string().default('Unpaid'),
-    currency: z.string().default('USD'),
-    unitType: z.string().default('Hourly'),
+    paymentStatus: z.string(),
+    currency: z.string(),
+    unitType: z.string(),
     unitPrice: z.string().min(1, { message: 'Unit price is required' }),
     quantity: z.string().min(1, { message: 'Quantity is required' }),
     subtotal: z.string(),
@@ -47,16 +47,16 @@ const FormSchema = z.object({
     salesTaxAmount: z.string().optional(),
     totalDue: z.string(),
     taxId: z.string().optional(),
-    clientId: z.string().min(1, { message: 'Client is required' }),
+    contactId: z.string().min(1, { message: 'Client is required' }),
     projectId: z.string().min(1, { message: 'Project is required' }),
 })
 
-const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoice }) => {
+const InvoiceDetails: React.FC<Props> = ({ accountId, contactId, projectId, invoice }) => {
     const { setClose } = useModal()
     const router = useRouter()
-    const [clients, setClients] = useState<Client[]>([])
+    const [contacts, setContacts] = useState<Contact[]>([])
     const [projects, setProjects] = useState<Project[]>([])
-    const [selectedClientId, setSelectedClientId] = useState<string | null>(clientId || null)
+    const [selectedContactId, setSelectedContactId] = useState<string | null>(contactId || null)
 
     // Get today's date and due date (7 days from now) in YYYY-MM-DD format
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -77,36 +77,36 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
             salesTaxAmount: invoice?.salesTaxAmount?.toString() ?? '',
             totalDue: invoice?.totalDue?.toString() ?? '',
             taxId: invoice?.taxId ?? '',
-            clientId: invoice?.clientId ?? clientId ?? '',
+            contactId: invoice?.contactId ?? contactId ?? '',
             projectId: invoice?.projectId ?? projectId ?? '',
         },
     })
 
-    // Fetch clients for the dropdown
+    // Fetch contacts for the dropdown
     useEffect(() => {
-        const fetchClients = async () => {
+        const fetchContacts = async () => {
             if (accountId) {
                 try {
-                    const response = await fetch(`/api/clients?accountId=${accountId}`);
+                    const response = await fetch(`/api/contacts?accountId=${accountId}`);
                     const data = await response.json();
-                    if (data.clients) {
-                        setClients(data.clients);
+                    if (data.contacts) {
+                        setContacts(data.contacts);
                     }
                 } catch (error) {
-                    console.error('Error fetching clients:', error);
+                    console.error('Error fetching contacts:', error);
                 }
             }
         };
         
-        fetchClients();
+        fetchContacts();
     }, [accountId]);
 
-    // Fetch projects for the selected client
+    // Fetch projects for the selected contact
     useEffect(() => {
         const fetchProjects = async () => {
-            if (accountId && selectedClientId) {
+            if (accountId && selectedContactId) {
                 try {
-                    const response = await fetch(`/api/projects?accountId=${accountId}&clientId=${selectedClientId}`);
+                    const response = await fetch(`/api/projects?accountId=${accountId}&contactId=${selectedContactId}`);
                     const data = await response.json();
                     if (data.projects) {
                         setProjects(data.projects);
@@ -117,12 +117,12 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
             }
         };
         
-        if (selectedClientId) {
+        if (selectedContactId) {
             fetchProjects();
         } else {
             setProjects([]);
         }
-    }, [accountId, selectedClientId]);
+    }, [accountId, selectedContactId]);
 
     // Calculate subtotal, sales tax amount, and total due when unit price or quantity changes
     useEffect(() => {
@@ -145,11 +145,11 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
         }
     }, [form.watch('unitPrice'), form.watch('quantity'), form.watch('salesTaxRate'), form]);
 
-    // Handle client selection change
-    const handleClientChange = (clientId: string) => {
-        setSelectedClientId(clientId);
-        form.setValue('clientId', clientId);
-        form.setValue('projectId', ''); // Reset project when client changes
+    // Handle contact selection change
+    const handleContactChange = (contactId: string) => {
+        setSelectedContactId(contactId);
+        form.setValue('contactId', contactId);
+        form.setValue('projectId', ''); // Reset project when contact changes
     };
 
     async function onSubmit(values: z.infer<typeof FormSchema>) {
@@ -160,7 +160,7 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
             }
 
             const invoiceData = {
-                id: invoice?.id ? invoice.id : v4(),
+                id: invoice?.id ? invoice.id : nanoid(),
                 invoiceDate: values.invoiceDate,
                 dueDate: values.dueDate,
                 paymentStatus: values.paymentStatus,
@@ -173,7 +173,7 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
                 salesTaxAmount: values.salesTaxAmount,
                 totalDue: values.totalDue,
                 taxId: values.taxId,
-                clientId: values.clientId,
+                contactId: values.contactId,
                 projectId: values.projectId,
             };
 
@@ -216,11 +216,11 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
                 salesTaxAmount: invoice.salesTaxAmount?.toString() || '',
                 totalDue: invoice.totalDue.toString(),
                 taxId: invoice.taxId || '',
-                clientId: invoice.clientId,
+                contactId: invoice.contactId,
                 projectId: invoice.projectId,
             });
             
-            setSelectedClientId(invoice.clientId);
+            setSelectedContactId(invoice.contactId);
         }
     }, [invoice, form]);
 
@@ -256,13 +256,13 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
                         className='space-y-4 w-full text-foreground bg-muted'>
 
                         <div className='flex md:flex-row gap-4'>
-                            <FormField disabled={isLoading} control={form.control} name="clientId"
+                            <FormField disabled={isLoading} control={form.control} name="contactId"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
                                         <FormLabel>* Client</FormLabel>
                                         <Select
                                             disabled={isLoading}
-                                            onValueChange={(value) => handleClientChange(value)}
+                                            onValueChange={(value) => handleContactChange(value)}
                                             defaultValue={field.value}
                                             value={field.value}
                                         >
@@ -272,9 +272,9 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {clients.map((client) => (
-                                                    <SelectItem key={client.id} value={client.id}>
-                                                        {client.clientName}
+                                                {contacts.map((contact) => (
+                                                    <SelectItem key={contact.id} value={contact.id}>
+                                                        {contact.contactName}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -288,14 +288,14 @@ const InvoiceDetails: React.FC<Props> = ({ accountId, clientId, projectId, invoi
                                     <FormItem className="flex-1">
                                         <FormLabel>* Project</FormLabel>
                                         <Select
-                                            disabled={isLoading || !selectedClientId}
+                                            disabled={isLoading || !selectedContactId}
                                             onValueChange={field.onChange}
                                             defaultValue={field.value}
                                             value={field.value}
                                         >
                                             <FormControl>
                                                 <SelectTrigger className="bg-input border-none text-muted-foreground">
-                                                    <SelectValue placeholder={selectedClientId ? "Select a project" : "Select a client first"} />
+                                                    <SelectValue placeholder={selectedContactId ? "Select a project" : "Select a client first"} />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>

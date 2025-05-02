@@ -1,27 +1,27 @@
 import React from 'react'
 import { db } from '@/lib/db'
 import { getAuthUserDetails } from '@/lib/queries'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Edit, Mail, Phone, Globe, MapPin } from 'lucide-react'
-import { useModal } from '@/providers/modal-provider'
-import ContactDetails from '@/components/forms/contact-details'
+import { Mail, Phone, Globe, MapPin } from 'lucide-react'
+import EditContactButton from '../_components/edit-contact-button'
+import ContactTagDisplay from '@/components/global/contact-tag-display'
+import {Badge} from "@/components/ui/badge";
 
 type Props = {
   params: { accountId: string; contactId: string }
 }
 
 const ContactPage = async ({ params }: Props) => {
+  const parameters = await params;
   const user = await getAuthUserDetails()
   if (!user || !user.Account) return null
 
   const contact = await db.contact.findUnique({
     where: {
-      id: params.contactId
+      id: parameters.contactId
     },
     include: {
-      Tags: true,
+      ContactTags: true,
       BillingAddress: true,
       projects: {
         include: {
@@ -31,6 +31,12 @@ const ContactPage = async ({ params }: Props) => {
       invoices: true
     }
   })
+  
+  console.log('Contact data:', JSON.stringify({
+    id: contact?.id,
+    contactName: contact?.contactName,
+    ContactTags: contact?.ContactTags
+  }, null, 2))
 
   if (!contact) return <div>Contact not found</div>
 
@@ -40,20 +46,27 @@ const ContactPage = async ({ params }: Props) => {
         <div>
           <h1 className="text-2xl font-bold">{contact.contactName}</h1>
           <div className="flex gap-2 mt-2">
-            {contact.Tags.map(tag => (
-              <Badge 
-                key={tag.id} 
-                style={{ backgroundColor: tag.color }}
-              >
-                {tag.name}
-              </Badge>
-            ))}
+            {contact.ContactTags.map(tag => {
+              // Check if the color is a custom color (starts with CUSTOM:)
+              const isCustomColor = tag.color.startsWith('CUSTOM:');
+              const colorHex = isCustomColor ? tag.color.split(':')[1] : undefined;
+              const colorName = isCustomColor ? 'CUSTOM' : tag.color;
+              
+              return (
+                <ContactTagDisplay 
+                  key={tag.id}
+                  title={tag.name}
+                  colorName={colorName}
+                  colorHex={colorHex}
+                />
+              );
+            })}
           </div>
         </div>
-        <Button className="flex items-center gap-2">
-          <Edit className="h-4 w-4" />
-          Edit Contact
-        </Button>
+        <EditContactButton 
+          user={user}
+          contactId={contact.id}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -17,25 +17,25 @@ const ProjectCard = ({ project, accountId }: ProjectCardProps) => {
     return (
         <CommandItem 
             key={project.id} 
-            className="max-w-3xl h-20 !bg-background my-2 text-primary border-[1px] border-border p-4 rounded-lg hover:!bg-background cursor-pointer transition-all"
+            className="max-w-3xl h-20 !bg-background my-2 text-primary border-[1px] border-border p-4 hover:!bg-background cursor-pointer transition-all"
         >
             <Link href={`/account/${accountId}/projects/${project.id}`} className="flex gap-4 w-full h-full">
                 <div className="flex flex-col justify-between w-full">
                     <div className="flex justify-between w-full">
                         <div className="flex flex-col">
                             <span className="font-medium">{project.projectTitle}</span>
-                            <span className="text-muted-foreground text-xs">
-                                {project.Client?.clientName || 'No Client'}
+                            <span className="text-foreground text-xs">
+                                {project.Contact?.contactName || 'No Client'}
                             </span>
                         </div>
-                        <Badge 
+                        <Badge
                             className={`${
                                 project.status === 'NotStarted' 
                                     ? 'bg-gray-500' 
                                     : project.status === 'InProgress' 
                                     ? 'bg-blue-500' 
                                     : 'bg-green-500'
-                            } text-white`}
+                            } text-white mt-2`}
                         >
                             {project.status === 'NotStarted' 
                                 ? 'Not Started' 

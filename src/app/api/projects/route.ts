@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
         const url = new URL(req.url);
         const accountId = url.searchParams.get('accountId');
-        const clientId = url.searchParams.get('clientId');
+        const contactId = url.searchParams.get('contactId');
 
         if (!accountId) {
             return NextResponse.json({ error: 'Account ID is required' }, { status: 400 });
@@ -21,9 +21,9 @@ export async function GET(req: NextRequest) {
             accountId: accountId
         };
 
-        // If clientId is provided, filter projects by client
-        if (clientId) {
-            whereClause.clientId = clientId;
+        // If contactId is provided, filter projects by contact
+        if (contactId) {
+            whereClause.contactId = contactId;
         }
 
         const projects = await db.project.findMany({

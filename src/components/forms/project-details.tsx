@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Account, Client, Project, $Enums } from "@prisma/client"
+import { Contact, $Enums } from "@prisma/client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -16,10 +16,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from "zod"
 import { Button } from "@/components/ui/button";
 import Loading from "@/components/global/loading";
-import { v4 } from "uuid";
 import { useModal } from "@/providers/modal-provider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ProjectsWithAccountClientContracts } from "@/lib/types";
+import { ProjectsWithAccountContactContracts } from "@/lib/types";
+import {nanoid} from "nanoid";
 
 const customInputStyles = {
     background: 'var(--input)',
@@ -29,27 +29,27 @@ const customInputStyles = {
 
 type Props = {
     accountId: string | null,
-    clientId?: string | null,
+    contactId?: string | null,
     contractId?: string | null,
-    projects?: ProjectsWithAccountClientContracts
+    projects?: ProjectsWithAccountContactContracts
 }
 
 const FormSchema = z.object({
     projectTitle: z.string().min(1, { message: 'Project title is required' }),
     description: z.string().optional(),
     projectId: z.string().optional(),
-    clientId: z.string().optional(),
+    contactId: z.string().optional(),
     estimatedHours: z.string().optional(),
     actualHours: z.string().optional(),
     estimatedCost: z.string().optional(),
     actualCost: z.string().optional(),
-    status: z.enum(['NotStarted', 'InProgress', 'Completed']).default('NotStarted'),
+    status: z.string().optional(),
 })
 
-const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, projects }) => {
+const ProjectDetails: React.FC<Props> = ({ accountId, contactId, contractId, projects }) => {
     const { setClose } = useModal()
     const router = useRouter()
-    const [clients, setClients] = useState<Client[]>([])
+    const [contacts, setContacts] = useState<Contact[]>([])
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -57,24 +57,24 @@ const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, proj
             projectTitle: projects?.projectTitle ?? '',
             description: projects?.description ?? '',
             projectId: projects?.projectId ?? '',
-            clientId: projects?.clientId ?? clientId ?? '',
+            contactId: projects?.contactId ?? contactId ?? 'no-client',
             estimatedHours: projects?.estimatedHours?.toString() ?? '',
             actualHours: projects?.actualHours?.toString() ?? '',
             estimatedCost: projects?.estimatedCost?.toString() ?? '',
             actualCost: projects?.actualCost?.toString() ?? '',
-            status: (projects?.status as $Enums.Status) ?? 'NotStarted',
+            status: projects?.status?.toString() ?? 'NotStarted',
         },
     })
 
     // Fetch clients for the dropdown
     useEffect(() => {
-        const fetchClients = async () => {
+        const fetchContacts = async () => {
             if (accountId) {
                 try {
-                    const response = await fetch(`/api/clients?accountId=${accountId}`);
+                    const response = await fetch(`/api/contacts?accountId=${accountId}`);
                     const data = await response.json();
-                    if (data.clients) {
-                        setClients(data.clients);
+                    if (data.contacts) {
+                        setContacts(data.contacts);
                     }
                 } catch (error) {
                     console.error('Error fetching clients:', error);
@@ -82,7 +82,7 @@ const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, proj
             }
         };
         
-        fetchClients();
+        fetchContacts();
     }, [accountId]);
 
     async function onSubmit(values: z.infer<typeof FormSchema>) {
@@ -93,11 +93,11 @@ const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, proj
             }
 
             const projectData = {
-                id: projects?.id ? projects.id : v4(),
+                id: projects?.id ? projects.id : nanoid(),
                 projectTitle: values.projectTitle,
                 description: values.description,
                 projectId: values.projectId,
-                clientId: values.clientId || null,
+                contactId: values.contactId === "no-client" ? null : values.contactId || null,
                 estimatedHours: values.estimatedHours,
                 actualHours: values.actualHours,
                 estimatedCost: values.estimatedCost,
@@ -137,7 +137,7 @@ const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, proj
                 projectTitle: projects.projectTitle,
                 description: projects.description || '',
                 projectId: projects.projectId || '',
-                clientId: projects.clientId || clientId || '',
+                contactId: projects.contactId || contactId || 'no-client',
                 estimatedHours: projects.estimatedHours?.toString() || '',
                 actualHours: projects.actualHours?.toString() || '',
                 estimatedCost: projects.estimatedCost?.toString() || '',
@@ -145,7 +145,7 @@ const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, proj
                 status: projects.status as $Enums.Status,
             });
         }
-    }, [projects, clientId, form]);
+    }, [projects, contactId, form]);
 
     const isLoading = form.formState.isSubmitting;
 
@@ -219,7 +219,7 @@ const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, proj
                         </div>
 
                         <div className='flex md:flex-row gap-4'>
-                            <FormField disabled={isLoading} control={form.control} name="clientId"
+                            <FormField disabled={isLoading} control={form.control} name="contactId"
                                 render={({ field }) => (
                                     <FormItem className="flex-1">
                                         <FormLabel>Client</FormLabel>
@@ -235,10 +235,10 @@ const ProjectDetails: React.FC<Props> = ({ accountId, clientId, contractId, proj
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="">No Client</SelectItem>
-                                                {clients.map((client) => (
-                                                    <SelectItem key={client.id} value={client.id}>
-                                                        {client.clientName}
+                                                <SelectItem value="no-client">No Client</SelectItem>
+                                                {contacts.map((contact) => (
+                                                    <SelectItem key={contact.id} value={contact.id}>
+                                                        {contact.contactName}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>

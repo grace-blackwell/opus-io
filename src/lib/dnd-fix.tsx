@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
-// This is a workaround for React 18 Strict Mode and react-beautiful-dnd
-// https://github.com/atlassian/react-beautiful-dnd/issues/2399
+// This is a workaround for React 18 Strict Mode and drag-and-drop
+// Note: @hello-pangea/dnd is a maintained fork of react-beautiful-dnd with React 18 fixes
 
-// Monkey patching to fix react-beautiful-dnd in React 18
+// Monkey patching to ensure consistent behavior
 const patchDndForReact18 = () => {
   // Fix for React 18 Strict Mode
   const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;

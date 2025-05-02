@@ -1,7 +1,10 @@
 import React from 'react'
 import { Document, Page, StyleSheet, View, Text } from "@react-pdf/renderer"
 import { format } from 'date-fns'
-import { getThemeColors } from './theme-colors'
+import { getThemeColors, themeColors } from './theme-colors'
+
+// Log all available themes for debugging
+console.log('Available themes:', Object.keys(themeColors));
 
 type InvoiceItem = {
     id: string
@@ -49,13 +52,14 @@ type Props = {
 }
 
 // Function to create themed styles
-const createThemedStyles = (theme: string = 'default') => {
+const createThemedStyles = (theme: string) => {
+    console.log('createThemedStyles called with theme:', theme);
     const colors = getThemeColors(theme);
     
     return StyleSheet.create({
         page: {
-            padding: 40,
-            backgroundColor: '#FFFFFF', // Keep white background for printing
+            padding: 20,
+            backgroundColor: '#FFFFFF',
             fontFamily: 'Helvetica',
         },
         section: {
@@ -64,7 +68,7 @@ const createThemedStyles = (theme: string = 'default') => {
         header: {
             flexDirection: 'row',
             justifyContent: 'space-between',
-            marginBottom: 30,
+            marginBottom: 10,
         },
         headerLeft: {
             width: '50%',
@@ -74,34 +78,44 @@ const createThemedStyles = (theme: string = 'default') => {
             alignItems: 'flex-end',
         },
         title: {
-            fontSize: 24,
-            fontWeight: 'bold',
+            fontSize: 14,
+            fontWeight: 'medium',
             marginBottom: 10,
             color: colors.primary,
+            padding: 5,
+            borderRadius: 5,
         },
-        companyName: {
-            fontSize: 16,
-            fontWeight: 'bold',
-            marginBottom: 5,
-            color: colors.foreground,
+        // Debug style to make it obvious which theme is being used
+        debugTheme: {
+            position: 'absolute',
+            top: 5,
+            right: 5,
+            fontSize: 12,
+            color: colors.primary,
+            backgroundColor: '#EEEEEE',
+            padding: 5,
+            borderRadius: 5,
+            border: `2px solid ${colors.primary}`,
         },
         text: {
-            fontSize: 10,
-            marginBottom: 3,
-            color: colors.mutedForeground,
+            fontSize: 8,
+            fontWeight: 'thin',
+            marginBottom: 1
         },
         textBold: {
             fontSize: 10,
             fontWeight: 'bold',
-            marginBottom: 3,
-            color: colors.foreground,
+            marginBottom: 1
+        },
+        detailsBackground: {
+            backgroundColor: colors.muted,
+            marginHorizontal: -20,
+            marginBottom: 30,
         },
         detailsSection: {
             flexDirection: 'row',
             justifyContent: 'space-between',
-            marginBottom: 30,
-            backgroundColor: colors.muted,
-            padding: 10,
+            padding: 30,
             borderRadius: 4,
         },
         detailsLeft: {
@@ -127,7 +141,6 @@ const createThemedStyles = (theme: string = 'default') => {
             borderBottomStyle: 'solid',
             paddingBottom: 8,
             paddingTop: 8,
-            backgroundColor: colors.muted,
         },
         tableRow: {
             flexDirection: 'row',
@@ -170,9 +183,9 @@ const createThemedStyles = (theme: string = 'default') => {
             color: colors.foreground,
         },
         tableHeaderText: {
-            fontSize: 10,
+            fontSize: 9,
             fontWeight: 'bold',
-            color: colors.foreground,
+            color: colors.mutedForeground,
         },
         totalsSection: {
             alignItems: 'flex-end',
@@ -185,7 +198,7 @@ const createThemedStyles = (theme: string = 'default') => {
             marginBottom: 5,
         },
         totalsLabel: {
-            fontSize: 10,
+            fontSize: 9,
             fontWeight: 'bold',
             color: colors.foreground,
         },
@@ -205,7 +218,7 @@ const createThemedStyles = (theme: string = 'default') => {
             paddingTop: 5,
         },
         totalDueLabel: {
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: 'bold',
             color: colors.foreground,
         },
@@ -213,13 +226,17 @@ const createThemedStyles = (theme: string = 'default') => {
             fontSize: 12,
             fontWeight: 'bold',
             color: colors.primary,
+            padding: 5,
+            borderRadius: 5,
         },
         notesTermsSection: {
+            fontSize: 8,
             flexDirection: 'row',
             justifyContent: 'space-between',
             marginBottom: 20,
         },
         notesSection: {
+            fontSize: 8,
             width: '48%',
         },
         termsSection: {
@@ -241,8 +258,27 @@ const createThemedStyles = (theme: string = 'default') => {
 const ThemedEditorStylePdf = ({ invoice }: Props) => {
     if (!invoice) return null;
     
-    // Create styles based on the theme (default to 'default' if not specified)
-    const styles = createThemedStyles(invoice.theme || 'default');
+    // Log the theme we're receiving
+    console.log('PDF component received theme:', invoice.theme);
+    
+    // Log customer details
+    console.log('PDF component received customer details:', {
+        contactName: invoice.contactName,
+        contactEmail: invoice.contactEmail,
+        contactPhone: invoice.contactPhone,
+        contactAddress: invoice.contactAddress,
+        contactCity: invoice.contactCity,
+        contactState: invoice.contactState,
+        contactZip: invoice.contactZip,
+        contactCountry: invoice.contactCountry,
+    });
+    
+    // Use the theme from the invoice data
+    const themeToUse = invoice.theme || 'default';
+    console.log('Using theme from invoice data:', themeToUse);
+    
+    // Create styles based on the theme
+    const styles = createThemedStyles(themeToUse);
     
     const formatCurrency = (amount: string | number) => {
         const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -266,7 +302,7 @@ const ThemedEditorStylePdf = ({ invoice }: Props) => {
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                {/* Header Section - Exactly as in the editor */}
+
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
                         <Text style={styles.title}>INVOICE</Text>
@@ -285,30 +321,34 @@ const ThemedEditorStylePdf = ({ invoice }: Props) => {
                 </View>
                 
                 {/* Invoice Details and Customer Info - Matching editor layout */}
-                <View style={styles.detailsSection}>
-                    <View style={styles.detailsLeft}>
-                        <Text style={styles.sectionTitle}>Bill to:</Text>
-                        <Text style={styles.textBold}>{invoice.contactName || ''}</Text>
-                        <Text style={styles.text}>{invoice.contactAddress || ''}</Text>
-                        <Text style={styles.text}>
-                            {invoice.contactCity ? `${invoice.contactCity}, ` : ''}
-                            {invoice.contactState || ''} {invoice.contactZip || ''}
-                        </Text>
-                        <Text style={styles.text}>{invoice.contactEmail || ''}</Text>
-                        <Text style={styles.text}>{invoice.contactPhone || ''}</Text>
-                    </View>
-                    <View style={styles.detailsRight}>
-                        <View style={{marginBottom: 5}}>
-                            <Text style={styles.textBold}>Invoice no.</Text>
-                            <Text style={styles.text}>{invoice.invoiceNumber || ''}</Text>
+                <View style={styles.detailsBackground}>
+                    <View style={styles.detailsSection}>
+                        <View style={styles.detailsLeft}>
+                            <View style={{marginBottom: 5}}>
+                                <Text style={styles.textBold}>Bill to:</Text>
+                            </View>
+                            <Text style={styles.text}>{invoice.contactName || ''}</Text>
+                            <Text style={styles.text}>{invoice.contactAddress || ''}</Text>
+                            <Text style={styles.text}>
+                                {invoice.contactCity ? `${invoice.contactCity}, ` : ''}
+                                {invoice.contactState || ''} {invoice.contactZip || ''}
+                            </Text>
+                            <Text style={styles.text}>{invoice.contactEmail || ''}</Text>
+                            <Text style={styles.text}>{invoice.contactPhone || ''}</Text>
                         </View>
-                        <View style={{marginBottom: 5}}>
-                            <Text style={styles.textBold}>Invoice date</Text>
-                            <Text style={styles.text}>{formatDate(invoice.invoiceDate)}</Text>
-                        </View>
-                        <View>
-                            <Text style={styles.textBold}>Due date</Text>
-                            <Text style={styles.text}>{formatDate(invoice.dueDate)}</Text>
+                        <View style={styles.detailsRight}>
+                            <View style={{marginBottom: 5}}>
+                                <Text style={styles.textBold}>Invoice Details</Text>
+                            </View>
+                            <View style={{marginBottom: 5}}>
+                                <Text style={styles.text}>Invoice #: {invoice.invoiceNumber || ''}</Text>
+                            </View>
+                            <View style={{marginBottom: 5}}>
+                                <Text style={styles.text}>Invoice date: {formatDate(invoice.invoiceDate)}</Text>
+                            </View>
+                            <View>
+                                <Text style={styles.text}>Due date: {formatDate(invoice.dueDate)}</Text>
+                            </View>
                         </View>
                     </View>
                 </View>

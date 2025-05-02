@@ -1,20 +1,50 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { PDFViewer } from '@react-pdf/renderer'
-import InvoicePdf from '@/app/(main)/account/[accountId]/invoices/_components/invoice-pdf'
+import ThemedEditorStylePdf from './themed-editor-style-pdf'
+import { useColorTheme } from '@/providers/color-theme-provider'
 
 type Props = {
     invoiceData: any
 }
 
 const InvoicePreview = ({ invoiceData }: Props) => {
-    if (!invoiceData) return null
+    const { colorTheme } = useColorTheme();
+    const [mounted, setMounted] = useState(false);
+    const [key, setKey] = useState(0); // Add a key to force re-render
+    
+    // Only execute client-side
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+    
+    // Force re-render when invoiceData changes
+    useEffect(() => {
+        if (invoiceData) {
+            setKey(prevKey => prevKey + 1);
+            console.log('Invoice data changed, forcing re-render');
+        }
+    }, [invoiceData]);
+    
+    // Don't render anything until mounted (to avoid hydration mismatch)
+    if (!mounted || !invoiceData) return null;
+    
+    // Map purple (default in ColorThemeProvider) to default for theme-colors.ts compatibility
+    const mappedTheme = colorTheme === 'purple' ? 'default' : colorTheme;
+    
+    // Use the current theme from the color theme provider
+    const themedInvoiceData = {
+        ...invoiceData,
+        theme: mappedTheme
+    };
+    
+    console.log('Final invoice data with color theme:', themedInvoiceData);
 
     return (
         <div className="w-full h-[600px] overflow-hidden">
-            <PDFViewer width="100%" height="100%" className="border rounded-md">
-                <InvoicePdf invoice={invoiceData} />
+            <PDFViewer key={key} width="100%" height="100%" className="border rounded-md">
+                <ThemedEditorStylePdf invoice={themedInvoiceData} />
             </PDFViewer>
         </div>
     )

@@ -1,8 +1,6 @@
-// Theme colors extracted from globals.css
-// These are the default theme colors (Purple theme)
 
 export const themeColors = {
-  // Default theme (Purple)
+
   default: {
     background: 'hsl(288 30% 98%)',
     foreground: 'hsl(288 50% 10%)',
@@ -15,22 +13,20 @@ export const themeColors = {
     destructive: 'rgba(247, 74, 74, 1)',
     border: 'hsl(288 20% 85%)',
   },
-  
-  // Blue Theme
+
   blue: {
     background: 'hsl(210 30% 98%)',
     foreground: 'hsl(210 50% 10%)',
     muted: 'hsl(210 20% 90%)',
     mutedForeground: 'hsl(210 10% 40%)',
-    primary: 'rgba(26, 115, 232, 1)',
+    primary: '#1A73E8FF',
     primaryForeground: 'hsl(210 10% 98%)',
-    secondary: 'rgba(255, 165, 0, 1)',
+    secondary: '#FF8C00',
     secondaryForeground: 'hsl(210 10% 98%)',
     destructive: 'rgba(247, 74, 74, 1)',
     border: 'hsl(210 20% 85%)',
   },
-  
-  // Red Theme
+
   red: {
     background: 'hsl(0 30% 98%)',
     foreground: 'hsl(0 50% 10%)',
@@ -43,8 +39,7 @@ export const themeColors = {
     destructive: 'rgba(247, 74, 74, 1)',
     border: 'hsl(0 20% 85%)',
   },
-  
-  // Green Theme
+
   green: {
     background: 'hsl(120 30% 98%)',
     foreground: 'hsl(120 50% 10%)',
@@ -57,8 +52,7 @@ export const themeColors = {
     destructive: 'rgba(247, 74, 74, 1)',
     border: 'hsl(120 20% 85%)',
   },
-  
-  // Orange Theme
+
   orange: {
     background: 'hsl(30 30% 98%)',
     foreground: 'hsl(30 50% 10%)',
@@ -71,8 +65,7 @@ export const themeColors = {
     destructive: 'rgba(247, 74, 74, 1)',
     border: 'hsl(30 20% 85%)',
   },
-  
-  // Pink Theme
+
   pink: {
     background: 'hsl(330 30% 98%)',
     foreground: 'hsl(330 50% 10%)',
@@ -87,7 +80,9 @@ export const themeColors = {
   },
 };
 
-// Function to get colors for a specific theme
-export const getThemeColors = (theme: string = 'default') => {
-  return themeColors[theme as keyof typeof themeColors] || themeColors.default;
+export const getThemeColors = (theme: string) => {
+  console.log('getThemeColors called with theme:', theme);
+  const colors = themeColors[theme as keyof typeof themeColors] || themeColors.default;
+  console.log('Returning colors for theme:', theme, colors.primary);
+  return colors;
 };

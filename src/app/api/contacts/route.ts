@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
         const contacts = await db.contact.findMany({
             where: whereClause,
             include: {
-                Tags: true
+                ContactTags: true
             },
             orderBy: {
                 contactName: 'asc'

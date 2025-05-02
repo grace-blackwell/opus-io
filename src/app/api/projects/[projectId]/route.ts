@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { projectId: string } }
 ) {
   try {
-    const { projectId } = params;
+    const parameters = await params;
+    const { projectId } = parameters;
 
     if (!projectId) {
       return NextResponse.json(
@@ -18,7 +19,7 @@ export async function GET(
     const project = await db.project.findUnique({
       where: { id: projectId },
       include: {
-        Client: true,
+        Contact: true,
       }
     });
 

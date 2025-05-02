@@ -38,9 +38,16 @@ export function formatDuration(seconds: number): string {
 /**
  * Calculates the elapsed time in seconds from a start time to now
  */
-export function getElapsedSeconds(startTime: Date | null): number {
+export function getElapsedSeconds(startTime: Date | null | undefined): number {
   if (!startTime) return 0;
   
-  const now = new Date();
-  return Math.floor((now.getTime() - startTime.getTime()) / 1000);
+  try {
+    const now = new Date();
+    // Ensure startTime is a valid Date object
+    const startTimeDate = startTime instanceof Date ? startTime : new Date(startTime);
+    return Math.floor((now.getTime() - startTimeDate.getTime()) / 1000);
+  } catch (error) {
+    console.error('Error calculating elapsed time:', error);
+    return 0;
+  }
 }

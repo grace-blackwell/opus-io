@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useModal } from '@/providers/modal-provider'
 import { PlusCircle } from 'lucide-react'
 import ContactDetails from '@/components/forms/contact-details'
+import CustomModal from "@/components/global/custom-modal";
 
 type Props = {
     user: any
@@ -15,11 +16,9 @@ const CreateContactButton = ({ user, className }: Props) => {
     const { setOpen } = useModal()
 
     const handleCreateContact = () => {
-        setOpen(
-            <ContactDetails 
-                accountData={user.Account} 
-            />
-        )
+        setOpen(<CustomModal title={'Add New Contact'} subheading={'Contacts can be grouped by type'}>
+            <ContactDetails accountData={user.Account}/>
+        </CustomModal>)
     }
 
     return (

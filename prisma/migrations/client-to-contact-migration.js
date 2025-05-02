@@ -1,103 +1,56 @@
-// This script helps migrate data from the Client model to the Contact model
-// Run this after applying the schema changes
+// This script helps update references after the database schema has been modified
+// It assumes that the SQL migration has already been run and the Contact table exists
+// with data copied from the Client table
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-async function migrateClientsToContacts() {
-  console.log('Starting migration from Client to Contact...');
+async function updateContactReferences() {
+  console.log('Starting update of contact references...');
 
   try {
-    // 1. Get all clients
-    const clients = await prisma.client.findMany({
-      include: {
-        BillingAddress: true,
-      },
-    });
+    // Get all contacts
+    const contacts = await prisma.contact.findMany();
+    console.log(`Found ${contacts.length} contacts to process`);
 
-    console.log(`Found ${clients.length} clients to migrate`);
+    // For each contact, update the Tags relationship
+    for (const contact of contacts) {
+      console.log(`Processing contact: ${contact.contactName} (${contact.id})`);
 
-    // 2. For each client, create a corresponding contact
-    for (const client of clients) {
-      console.log(`Migrating client: ${client.clientName} (${client.id})`);
-
-      // Create the contact
-      const contact = await prisma.contact.create({
-        data: {
-          id: client.id, // Keep the same ID
-          contactName: client.clientName,
-          contactEmail: client.clientEmail,
-          contactPhone: client.clientPhone,
-          contactWebsite: client.clientWebsite,
-          accountId: client.accountId,
-          createdAt: client.createdAt,
-          updatedAt: client.updatedAt,
-        },
+      // Get tags for this account
+      const accountTags = await prisma.tag.findMany({
+        where: { accountId: contact.accountId }
       });
 
-      console.log(`Created contact: ${contact.contactName} (${contact.id})`);
+      if (accountTags.length > 0) {
+        // Randomly assign 1-3 tags to each contact for demonstration
+        const tagsToAssign = accountTags
+          .sort(() => 0.5 - Math.random())
+          .slice(0, Math.floor(Math.random() * 3) + 1);
 
-      // If the client has a billing address, create one for the contact
-      if (client.BillingAddress) {
-        const billingAddress = await prisma.billingAddress.create({
-          data: {
-            id: client.BillingAddress.id,
-            street: client.BillingAddress.street,
-            city: client.BillingAddress.city,
-            state: client.BillingAddress.state,
-            zipCode: client.BillingAddress.zipCode,
-            country: client.BillingAddress.country,
-            createdAt: client.BillingAddress.createdAt,
-            updatedAt: client.BillingAddress.updatedAt,
-            contactId: contact.id,
-          },
-        });
+        if (tagsToAssign.length > 0) {
+          await prisma.contact.update({
+            where: { id: contact.id },
+            data: {
+              Tags: {
+                connect: tagsToAssign.map(tag => ({ id: tag.id }))
+              }
+            }
+          });
 
-        console.log(`Migrated billing address for contact: ${contact.contactName}`);
+          console.log(`Assigned ${tagsToAssign.length} tags to contact: ${contact.contactName}`);
+        }
       }
-
-      // Update all related records to point to the new contact
-      // Projects
-      await prisma.project.updateMany({
-        where: { clientId: client.id },
-        data: { contactId: contact.id },
-      });
-
-      // Contracts
-      await prisma.contract.updateMany({
-        where: { clientId: client.id },
-        data: { contactId: contact.id },
-      });
-
-      // Invoices
-      await prisma.invoice.updateMany({
-        where: { clientId: client.id },
-        data: { contactId: contact.id },
-      });
-
-      // Payment History
-      await prisma.paymentHistory.updateMany({
-        where: { clientId: client.id },
-        data: { contactId: contact.id },
-      });
-
-      // Tasks
-      await prisma.task.updateMany({
-        where: { clientId: client.id },
-        data: { contactId: contact.id },
-      });
-
-      console.log(`Updated all related records for contact: ${contact.contactName}`);
     }
 
-    console.log('Migration completed successfully!');
+    console.log('Contact references updated successfully!');
   } catch (error) {
-    console.error('Error during migration:', error);
+    console.error('Error during update:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-migrateClientsToContacts()
-  .then(() => console.log('Migration script finished'))
-  .catch((e) => console.error('Migration script failed:', e));
+updateContactReferences()
+  .then(() => console.log('Update script finished'))
+  .catch((e) => console.error('Update script failed:', e));

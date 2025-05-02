@@ -5,14 +5,23 @@ import { Button } from '@/components/ui/button'
 import { useModal } from '@/providers/modal-provider'
 import { Edit } from 'lucide-react'
 import ContactDetails from '@/components/forms/contact-details'
-import { Contact } from '@prisma/client'
+import { BillingAddress, Contact, ContactTag } from '@prisma/client'
+import CustomModal from "@/components/global/custom-modal"
+import { toast } from 'sonner';
+
+type ContactWithRelations = Contact & {
+    BillingAddress?: BillingAddress | null;
+    ContactTags?: ContactTag[];
+    projects?: any[];
+}
 
 type Props = {
     user: any
     contactId: string
+    size?: "default" | "sm" | "lg" | "icon"
 }
 
-const EditContactButton = ({ user, contactId }: Props) => {
+const EditContactButton = ({ user, contactId, size = "sm" }: Props) => {
     const { setOpen } = useModal()
     const [isLoading, setIsLoading] = useState(false)
 
@@ -22,20 +31,25 @@ const EditContactButton = ({ user, contactId }: Props) => {
             // Fetch the contact data
             const response = await fetch(`/api/contacts/${contactId}`)
             if (!response.ok) {
-                throw new Error('Failed to fetch contact')
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.error || 'Failed to fetch contact';
+                console.error(`Error ${response.status}: ${errorMessage}`);
+                throw new Error(errorMessage);
             }
             
-            const contact: Contact = await response.json()
+            const contact: ContactWithRelations = await response.json()
+            
+            console.log('Fetched contact data:', contact)
             
             // Open the modal with the contact data
-            setOpen(
-                <ContactDetails 
-                    accountData={user.Account} 
-                    data={contact}
-                />
-            )
+            setOpen(<CustomModal title={'Edit Contact'} subheading={''}>
+                <ContactDetails accountData={user.Account} data={contact}/>
+            </CustomModal>)
         } catch (error) {
-            console.error('Error fetching contact:', error)
+            console.error('Error fetching contact:', error);
+            toast.error('Failed to load contact details', {
+                description: 'Please try again or contact support if the issue persists.'
+            });
         } finally {
             setIsLoading(false)
         }
@@ -43,9 +57,9 @@ const EditContactButton = ({ user, contactId }: Props) => {
 
     return (
         <Button 
-            size="sm"
-            variant="outline"
-            className="flex items-center gap-1 w-20"
+            size={size}
+            variant={'ghost'}
+            className="flex items-center gap-1 w-20 hover:bg-secondary"
             onClick={handleEditContact}
             disabled={isLoading}
         >

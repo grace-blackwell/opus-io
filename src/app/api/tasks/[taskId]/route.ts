@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const { taskId } = params;
+    const parameters = await params;
+    const { taskId } = parameters;
 
     if (!taskId) {
       return NextResponse.json(
@@ -19,7 +20,7 @@ export async function GET(
       where: { id: taskId },
       include: {
         Project: true,
-        Client: true,
+        Contact: true,
         Tags: true,
       }
     });

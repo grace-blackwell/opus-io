@@ -26,7 +26,7 @@ const ContactTagDisplay: React.FC<TagComponentProps> = ({
     
     // Generate dynamic className for custom colors
     const dynamicClassName = colorHex 
-        ? `p-2 rounded-sm flex-shrink-0 text-xs bg-[${tagColor}]/10 text-[${tagColor}] border-[1px] border-[${tagColor}]`
+        ? `p-2 rounded-sm flex-shrink-0 text-xs bg-[${tagColor}]/10 text-[${tagColor}]`
         : "";
     
     return (

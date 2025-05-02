@@ -1,7 +1,7 @@
 'use client'
 
 import React, {useEffect, useState} from 'react'
-import {Account, Contact, Tag} from "@prisma/client"
+import {Account, BillingAddress, Contact, ContactTag} from "@prisma/client"
 import {toast} from "sonner"
 import {useRouter} from "next/navigation";
 import {Input} from "@/components/ui/input";
@@ -10,7 +10,6 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 import {
     createOrUpdateContact,
     saveActivityLogNotification,
-    getTagsForAccount
 } from "@/lib/queries";
 import {useForm} from "react-hook-form";
 import {zodResolver} from '@hookform/resolvers/zod'
@@ -18,12 +17,12 @@ import * as z from "zod"
 import {Button} from "@/components/ui/button";
 import {useModal} from "@/providers/modal-provider";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import ContactTagCreator from "@/components/global/contact-tag-creator";
 import {States} from "@/lib/constants";
 import {Check, ChevronsUpDown} from "lucide-react";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 import {cn} from "@/lib/utils";
 import {nanoid} from "nanoid";
-import TagSelector from "@/components/global/tag-selector";
 
 const customInputStyles = {
     background: 'var(--input)',
@@ -31,9 +30,14 @@ const customInputStyles = {
     color: 'var(--foreground)'
 };
 
+type ContactWithRelations = Contact & {
+    BillingAddress?: BillingAddress | null;
+    ContactTags?: ContactTag[];
+}
+
 type Props = {
     accountData?: Account,
-    data?: Partial<Contact>
+    data?: Partial<ContactWithRelations>
 }
 
 const FormSchema = z.object({
@@ -51,7 +55,7 @@ const FormSchema = z.object({
 const ContactDetails: React.FC<Props> = ({accountData, data}) => {
     const [open, setOpen] = useState(false)
     const [value, setValue] = useState("")
-    const [selectedTags, setSelectedTags] = useState<Tag[]>([])
+    const [selectedTags, setSelectedTags] = useState<ContactTag[]>([])
     const {setClose} = useModal()
     const router = useRouter()
 
@@ -75,14 +79,29 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
         const loadTags = async () => {
             if (data?.id && accountData?.id) {
                 try {
-                    // Fetch all tags for this account
-                    const accountTags = await getTagsForAccount(accountData.id);
-                    
+                    console.log('Loading tags for contact:', data.id);
                     // Fetch the contact with its tags
                     const contactWithTags = await fetch(`/api/contacts/${data.id}`).then(res => res.json());
                     
-                    if (contactWithTags && contactWithTags.Tags) {
-                        setSelectedTags(contactWithTags.Tags);
+                    if (contactWithTags && contactWithTags.ContactTags) {
+                        console.log('Contact with tags response:', contactWithTags);
+                        
+                        // Process the tags to handle custom colors
+                        const processedTags = contactWithTags.ContactTags.map(tag => {
+                            // Check if the color field contains a custom color
+                            if (tag.color.startsWith('CUSTOM:')) {
+                                const [_, colorHex] = tag.color.split(':');
+                                return {
+                                    ...tag,
+                                    colorHex,
+                                    color: 'CUSTOM'
+                                };
+                            }
+                            return tag;
+                        });
+                        
+                        console.log('Setting selected contact tags:', processedTags);
+                        setSelectedTags(processedTags);
                     }
                 } catch (error) {
                     console.error("Error loading tags:", error);
@@ -96,7 +115,7 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
     async function onSubmit(values: z.infer<typeof FormSchema>){
         try {
             const billingAddress = {
-                id: nanoid(),
+                id: data?.BillingAddress?.id || nanoid(),
                 street: values.street || '',
                 city: values.city || '',
                 state: values.state || '',
@@ -104,6 +123,8 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
                 country: values.country || '',
             }
 
+            console.log('Submitting contact with selected tags:', selectedTags);
+            
             const response = await createOrUpdateContact({
                 id: data?.id ? data.id : nanoid(),
                 contactName: values.contactName,
@@ -121,9 +142,15 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
 
             if(!response) throw new Error('Failed to create contact')
 
-            await saveActivityLogNotification(accountData?.id ?? "", `New contact added: ${values.contactName}`)
+            const isNewContact = !data?.id;
+            const actionText = isNewContact ? 'added' : 'updated';
+            
+            await saveActivityLogNotification(
+                accountData?.id ?? "", 
+                `Contact ${actionText}: ${values.contactName}`
+            )
 
-            toast.success(`Successfully created a new contact`, {
+            toast.success(`Successfully ${isNewContact ? 'created a new' : 'updated'} contact`, {
                 description: `${values.contactName}`
             })
 
@@ -132,23 +159,42 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
 
         } catch (e) {
             console.log(e);
+            const isNewContact = !data?.id;
             toast.error('Oops...', {
-                description: 'Something went wrong while adding the Contact.'
+                description: `Something went wrong while ${isNewContact ? 'adding' : 'updating'} the Contact.`
             });
         }
     }
 
     useEffect(() => {
+        console.log('ContactDetails data:', data);
         if (data) {
+            console.log('Resetting form with data:', {
+                contactName: data.contactName,
+                contactEmail: data.contactEmail,
+                contactPhone: data.contactPhone,
+                contactWebsite: data.contactWebsite,
+                BillingAddress: data.BillingAddress
+            });
+            
             form.reset({
                 contactName: data.contactName || '',
                 contactEmail: data.contactEmail || '',
                 contactPhone: data.contactPhone || '',
                 contactWebsite: data.contactWebsite || '',
-                // We would need to fetch billing address data here
-            })
+            });
+            
+            // If we have billing address data, populate those fields too
+            if (data.BillingAddress) {
+                console.log('Setting billing address fields:', data.BillingAddress);
+                form.setValue('street', data.BillingAddress.street || '');
+                form.setValue('city', data.BillingAddress.city || '');
+                form.setValue('state', data.BillingAddress.state || '');
+                form.setValue('zipCode', data.BillingAddress.zipCode || '');
+                form.setValue('country', data.BillingAddress.country || '');
+            }
         }
-    }, [data]);
+    }, [data, form]);
 
     const isLoading = form.formState.isSubmitting;
 
@@ -234,10 +280,10 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
 
                         <div className="space-y-2">
                             <FormLabel>Tags</FormLabel>
-                            <TagSelector 
+                            <ContactTagCreator 
                                 accountId={accountData?.id || ''} 
-                                onTagsSelected={setSelectedTags}
-                                initialTags={selectedTags}
+                                getSelectedContactTags={setSelectedTags}
+                                defaultTags={selectedTags}
                             />
                         </div>
 
@@ -339,9 +385,11 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
                                        )}></FormField>
                         </div>
 
+
+
                         <div className='flex justify-end'>
                             <Button type='submit' disabled={isLoading}>
-                                {isLoading ? 'Saving...' : 'Save Contact'}
+                                {isLoading ? 'Saving...' : data?.id ? 'Update Contact' : 'Save Contact'}
                             </Button>
                         </div>
                     </form>

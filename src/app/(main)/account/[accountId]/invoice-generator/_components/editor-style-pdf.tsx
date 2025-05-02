@@ -69,9 +69,9 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontSize: 16,
         marginBottom: 10,
+        color: '#1F2937',
     },
     companyName: {
         fontSize: 16,
@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 30,
+        backgroundColor: '#F9FAFB',
     },
     detailsLeft: {
         width: '50%',
@@ -245,10 +246,10 @@ const EditorStylePdf = ({ invoice }: Props) => {
                 {/* Header Section - Exactly as in the editor */}
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
-                        <Text style={styles.title}>Invoice</Text>
+                        <Text style={styles.title}>INVOICE</Text>
                     </View>
                     <View style={styles.headerRight}>
-                        <Text style={styles.companyName}>{invoice.companyName || ''}</Text>
+                        <Text style={styles.textBold}>{invoice.companyName || ''}</Text>
                         <Text style={styles.text}>{invoice.companyAddress || ''}</Text>
                         <Text style={styles.text}>
                             {invoice.companyCity ? `${invoice.companyCity}, ` : ''}

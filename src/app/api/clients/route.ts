@@ -16,18 +16,18 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Account ID is required' }, { status: 400 });
         }
 
-        const clients = await db.client.findMany({
+        const contacts = await db.contact.findMany({
             where: {
                 accountId: accountId
             },
             orderBy: {
-                clientName: 'asc'
+                contactName: 'asc'
             }
         });
 
-        return NextResponse.json({ clients });
+        return NextResponse.json({ contacts });
     } catch (error) {
-        console.error('Error fetching clients:', error);
+        console.error('Error fetching contacts:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

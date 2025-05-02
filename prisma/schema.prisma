@@ -6,105 +6,560 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
+enum Icon {
+  settings
+  chart
+  calendar
+  check
+  chip
+  compass
+  database
+  flag
+  home
+  info
+  link
+  lock
+  messages
+  notification
+  payment
+  power
+  receipt
+  shield
+  star
+  tune
+  videorecorder
+  wallet
+  warning
+  headphone
+  send
+  kanban
+  automations
+  person
+  category
+  contact
+  clipboard
+  briefcase
+  media
+}
+
+enum Plan {
+  price_5s4vyf751ecs7os
+  price_pxzapqw3zkv8lzv
+}
+
 model User {
-  id                  String               @id @default(uuid())
-  accountId           String?
-  email               String               @unique
-  firstName           String
-  lastName            String
-  avatarUrl           String
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  Address             Address?
-  Account             Account?
+  id                    String              @id @default(nanoid())
+  accountId             String?             @unique
+  email                 String              @unique
+  firstName             String
+  lastName              String
+  avatarUrl             String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  Account               Account?
+  Notifications         Notification[]
 
   @@index([accountId])
 }
 
 model Account {
-  id                  String               @id @default(uuid())
-  connectedAccountId  String?              @default("")
-  logo                String
-  whiteLabel          Boolean              @default(true)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  userId              String               @unique
-  User                User                 @relation(fields: [userId], references: [id])
-  Subscription        Subscription?
-  Media               Media[]
-  Notifications       Notification[]
-  SidebarOption       SidebarOption[]
-
-  @@index([userId])
-}
-
-model Address {
-  id                  String               @id @default(uuid())
-  userId              String               @unique
-  address             String               @default("")
-  city                String               @default("")
-  state               String               @default("")
-  zipCode             String               @default("")
-  country             String               @default("")
-  User                User                 @relation(fields: [userId], references: [id])
+  id                    String              @id @default(nanoid())
+  connectAccoutId       String?             @default("")
+  customerId            String              @default("")
+  accountName           String
+  accountPhone          String              @default("")
+  accountEmail          String
+  connectedAccountId    String?             @default("")
+  title                 String              @default("")
+  logo                  String              @default("")
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  userId                String              @unique
+  User                  User                @relation(fields: [userId], references: [id])
+  address               String
+  city                  String
+  state                 String
+  zipCode               String
+  country               String
+  Subscription          Subscription?
+  Media                 Media[]
+  Notifications         Notification[]
+  SidebarOption         SidebarOption[]
+  Contacts              Contact[]
+  Projects              Project[]
+  Contracts             Contract[]
+  Invoices              Invoice[]
+  Taxes                 Taxes[]
+  Triggers              Trigger[]
+  Automations           Automation[]
+  Kanbans               Kanban[]
+  Tags                  Tag[]
+  ContactTags           ContactTag[]
+  Funnels               Funnel[]
+  TimeEntries           TimeEntry[]
 
   @@index([userId])
 }
 
 model SidebarOption {
-  id                  String                 @id @default(uuid())
-  name                String                 @default("Menu")
-  link                String                 @default("#")
-  icon                String                 @default("info")
-  accountId           String                 @unique
-  Account             Account                @relation(fields: [accountId], references: [id])
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
+  id                    String              @id @default(nanoid())
+  name                  String              @default("Menu")
+  link                  String              @default("#")
+  icon                  Icon                @default(info)
+  accountId             String
+  Account               Account             @relation(fields: [accountId], references: [id])
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 
   @@index([accountId])
 }
 
 model Media {
-  id                  String               @id @default(uuid())
-  type                String?
-  name                String
-  link                String               @unique
-  accountId           String
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  Account             Account              @relation(fields: [accountId], references: [id])
+  id                    String              @id @default(nanoid())
+  type                  String?
+  name                  String
+  link                  String              @unique
+  accountId             String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  Account               Account             @relation(fields: [accountId], references: [id])
 
   @@index([accountId])
 }
 
 model Subscription {
-  id                   String               @id @default(uuid())
-  plan                 String
-  price                String?
-  active               Boolean              @default(false)
-  priceId              String
-  accountId            String               @unique
-  currentPeriodEndDate DateTime
-  subscriptionId       String               @unique
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  Account              Account              @relation(fields: [accountId], references: [id])
+  id                    String              @id @default(nanoid())
+  plan                  Plan?
+  price                 String?
+  active                Boolean             @default(false)
+  priceId               String
+  accountId             String              @unique
+  currentPeriodEndDate  DateTime
+  subscriptionId        String              @unique
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  Account               Account             @relation(fields: [accountId], references: [id])
 
   @@index([accountId])
 }
 
 model Notification {
-  id                  String                @id @default(uuid())
-  notification        String
-  accountId           String
-  Account             Account               @relation(fields: [accountId], references: [id])
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  id                    String            @id @default(nanoid())
+  notification          String
+  accountId             String
+  Account               Account           @relation(fields: [accountId], references: [id])
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  User                  User?             @relation(fields: [userId], references: [id])
+  userId                String?
 
   @@index([accountId])
+  @@index([userId])
+}
+
+model Contact {
+  id                    String            @id @default(nanoid())
+  contactName           String            @default("")
+  contactEmail          String?           @unique
+  contactPhone          String?
+  contactWebsite        String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  accountId             String
+  Account               Account           @relation(fields: [accountId], references: [id])
+  projects              Project[]
+  BillingAddress        BillingAddress?
+  paymentHistory        PaymentHistory[]
+  contracts             Contract[]
+  invoices              Invoice[]
+  Tasks                 Task[]
+  ContactTags           ContactTag[]
+
+  @@index([accountId])
+}
+
+model Project {
+  id                    String            @id @default(nanoid())
+  description           String?
+  projectTitle          String            @default("")
+  projectId             String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  contactId             String?
+  Contact               Contact?          @relation(fields: [contactId], references: [id])
+  accountId             String
+  Account               Account           @relation(fields: [accountId], references: [id])
+  estimatedHours        Float?
+  actualHours           Float?
+  estimatedCost         Float?
+  actualCost            Float?
+  status                Status            @default(NotStarted)
+  contractId            String?
+  Contract              Contract?
+  invoices              Invoice[]
+  Tasks                 Task[]
+  TimeEntries           TimeEntry[]
+  isTracking            Boolean           @default(false)
+  trackedStartTime      DateTime?
+  totalTrackedTime      Int               @default(0) // Total tracked time in seconds
+
+  @@index([contactId])
+  @@index([accountId])
+}
+
+enum Status {
+  NotStarted
+  InProgress
+  Completed
+}
+
+model BillingAddress {
+  id                    String            @id @default(nanoid())
+  street                String
+  city                  String
+  state                 String
+  zipCode               String
+  country               String
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @default(now())
+  contactId             String            @unique
+  Contact               Contact           @relation(fields: [contactId], references: [id])
+
+  @@index([contactId])
+}
+
+model PaymentHistory {
+  id                    String            @id @default(nanoid())
+  paymentDate           DateTime
+  paymentAmount         Float
+  paymentMethod         String
+  paymentStatus         String
+  contactId             String
+  invoiceId             String
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  Contact               Contact           @relation(fields: [contactId], references: [id])
+
+  @@index([contactId])
+  @@index([invoiceId])
+}
+
+model Contract {
+  id                          String              @id @default(nanoid())
+  contractTitle               String              @default("")
+  dateOfAgreement             DateTime
+  expirationDate              DateTime
+  status                      String              @default("Active")
+  contractType                String              @default("Fixed Term")
+  scopeOfWork                 String              @default("")
+  paymentTerms                String
+  paymentMethod               String              @default("Stripe")
+  paymentFrequency            String
+  confidentialityAgreement    Boolean             @default(false)
+  terminationClause           Boolean             @default(false)
+  clientSignature             Boolean?
+  clientSignatureDate         DateTime?
+  freelancerSignature         Boolean?
+  freelancerSignatureDate     DateTime?
+  amendmentClause             Boolean             @default(false)
+  amendments                  ContractAmendment[]
+  revisions                   Int                 @default(0)
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime            @updatedAt
+  contactId                   String
+  Contact                     Contact             @relation(fields: [contactId], references: [id])
+  projectId                   String              @unique
+  Project                     Project             @relation(fields: [projectId], references: [id])
+  accountId                   String
+  Account                     Account             @relation(fields: [accountId], references: [id])
+  invoices                    Invoice[]
+
+  @@index([contactId])
+  @@index([accountId])
+}
+
+model ContractAmendment {
+  id                          String            @id @default(nanoid())
+  contractId                  String
+  amendmentNumber             Int
+  amendmentDescription        String
+  amendmentChanges            Json?
+  clientSignature             Boolean?
+  clientSignatureDate         DateTime?
+  freelancerSignature         Boolean?
+  freelancerSignatureDate     DateTime?
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt
+  Contract                    Contract          @relation(fields: [contractId], references: [id])
+  contactId                   String
+
+  @@index([contractId])
+}
+
+model Invoice {
+  id                        String            @id @default(nanoid())
+  invoiceNumber             BigInt
+  invoiceDate               DateTime
+  dueDate                   DateTime
+  paymentStatus             String            @default("Unpaid")
+  currency                  String            @default("USD")
+  unitType                  String            @default("Hourly")
+  unitPrice                 Float
+  quantity                  Int
+  subtotal                  Float
+  salesTaxRate              Float?
+  salesTaxAmount            Float?
+  totalDue                  Float
+  taxId                     String?
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+  contractId                String
+  contactId                 String            @default("")
+  accountId                 String
+  projectId                 String
+  Project                   Project           @relation(fields: [projectId], references: [id])
+  Account                   Account           @relation(fields: [accountId], references: [id])
+  Contact                   Contact           @relation(fields: [contactId], references: [id])
+  Contract                  Contract          @relation(fields: [contractId], references: [id])
+
+  @@index([accountId])
+  @@index([contactId])
+  @@index([contractId])
+  @@index([projectId])
+}
+
+model Taxes {
+  id                        String            @id @default(nanoid())
+  taxType                   TaxType
+  marriedfilingJointly      Boolean
+  marriedFilingSeparately   Boolean
+  headOfHousehold           Boolean
+  subjectedIncome           Float
+  taxPercentage             Float
+  estimatedAmount           Float
+  deductions                Float
+  accountId                 String
+  quarterlyPaymentAmount    Float
+  quarterlyPaymentDate      DateTime
+  Account                   Account           @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+}
+
+enum TaxType {
+  selfEmployment
+  federalIncomeTax
+  stateIncomeTax
+  localIncomeTax
+}
+
+model Kanban {
+  id                        String              @id @default(nanoid())
+  name                      String
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  Lane                      Lane[]
+  Account                   Account             @relation(fields: [accountId], references: [id])
+  accountId                 String
+
+  @@index([accountId])
+}
+
+model Lane {
+  id                        String              @id @default(nanoid())
+  name                      String
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  Kanban                    Kanban              @relation(fields: [kanbanId], references: [id], onDelete: Cascade)
+  kanbanId                  String
+  Tasks                     Task[]
+  order                     Int                 @default(0)
+
+  @@index([kanbanId])
+}
+
+model Task {
+  id                        String              @id @default(nanoid())
+  name                      String
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  laneId                    String
+  order                     Int                 @default(0)
+  Lane                      Lane                @relation(fields: [laneId], references: [id])
+  value                     String?
+  description               String?
+  contactId                 String?
+  Contact                   Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  projectId                 String?
+  Project                   Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  Tags                      Tag[]
+  TimeEntries               TimeEntry[]
+  isTracking                Boolean             @default(false)
+  trackedStartTime          DateTime?
+  totalTrackedTime          Int                 @default(0) // Total tracked time in seconds
+
+  @@index([laneId])
+  @@index([contactId])
+  @@index([projectId])
+}
+
+model TimeEntry {
+  id                        String              @id @default(nanoid())
+  taskId                    String?
+  Task                      Task?               @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  projectId                 String?
+  Project                   Project?            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  startTime                 DateTime
+  endTime                   DateTime?
+  duration                  Int?                // Duration in seconds
+  description               String?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  accountId                 String
+  Account                   Account             @relation(fields: [accountId], references: [id])
+
+  @@index([taskId])
+  @@index([projectId])
+  @@index([accountId])
+}
+
+model Tag {
+  id                        String              @id @default(uuid())
+  name                      String
+  color                     String
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  accountId                 String
+  Account                   Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Task                      Task[]
+
+  @@index([accountId])
+}
+
+model ContactTag {
+  id                        String              @id @default(uuid())
+  name                      String
+  color                     String
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  accountId                 String
+  Account                   Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Contact                   Contact[]
+
+  @@index([accountId])
+}
+
+enum TriggerTypes {
+  CONTACT_FORM
+}
+
+model Trigger {
+  id                        String              @id @default(nanoid())
+  name                      String
+  type                      TriggerTypes
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  accountId                 String
+  Account                   Account             @relation(fields: [accountId], references: [id])
+  Automations               Automation[]
+
+  @@index([accountId])
+}
+
+model Automation {
+  id                        String                @id @default(nanoid())
+  name                      String
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  triggerId                 String?
+  published                 Boolean               @default(false)
+  Trigger                   Trigger?              @relation(fields: [triggerId], references: [id], onDelete: Cascade)
+  accountId                 String
+  Account                   Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Action                    Action[]
+  AutomationInstance        AutomationInstance[]
+
+  @@index([triggerId])
+  @@index([accountId])
+}
+
+model AutomationInstance {
+  id                        String                @id @default(nanoid())
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  automationId              String
+  Automation                Automation            @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  active                    Boolean               @default(false)
+
+  @@index([automationId])
+}
+
+enum ActionType {
+  CREATE_CONTACT
+}
+
+model Action {
+  id                        String                @id @default(nanoid())
+  name                      String
+  type                      ActionType
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  automationId              String
+  order                     Int
+  Automation                Automation            @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  laneId                    String                @default("0")
+
+  @@index([automationId])
+}
+
+model Funnel {
+  id                        String                @id @default(uuid())
+  name                      String
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  description               String?
+  published                 Boolean               @default(false)
+  subDomainName             String?               @unique
+  favicon                   String?               @db.Text
+  accountId                 String
+  Account                   Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  FunnelPages               FunnelPage[]
+  liveProducts              String?               @default("[]")
+  ClassName                 ClassName[]
+
+  @@index([accountId])
+}
+
+model ClassName {
+  id                        String                @id @default(uuid())
+  name                      String
+  color                     String
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  funnelId                  String
+  customData                String?               @db.Text
+  Funnel                    Funnel                @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@index([funnelId])
+}
+
+model FunnelPage {
+  id                        String                @id @default(uuid())
+  name                      String
+  pathName                  String                @default("")
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  visits                    Int                   @default(0)
+  content                   String?               @db.Text
+  order                     Int
+  previewImage              String?               @db.Text
+  funnelId                  String
+  Funnel                    Funnel                @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@index([funnelId])
 }

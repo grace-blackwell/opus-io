@@ -1,74 +1,125 @@
-import { InvoicesWithAccountClientContractProject } from "./types";
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+'use server'
 
-const styles = StyleSheet.create({
-    page: {
-        flexDirection: 'row',
-        backgroundColor: '#E4E4E4'
-    },
-    section: {
-        margin: 10,
-        padding: 10,
-        flexGrow: 1
+import nodemailer from 'nodemailer';
+import { InvoicesWithAccountContactContractProject } from "./types";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
+import Mail from "nodemailer/lib/mailer";
+import { renderToBuffer } from '@react-pdf/renderer';
+import InvoicePdf from '@/app/(main)/account/[accountId]/invoices/_components/invoice-pdf';
+
+const transport = nodemailer.createTransport({
+    host: process.env.SMTP_SERVER_HOST,
+    port: process.env.SMTP_SERVER_PORT,
+    secure: process.env.NODE_ENV !== 'development', // true
+    auth: {
+        user: process.env.SMTP_SERVER_USERNAME,
+        pass: process.env.SMTP_SERVER_PASSWORD,
     }
-});
+} as SMTPTransport.Options)
 
+type EmailProps = {
+    sender: Mail.Address,
+    recipients: Mail.Address[],
+    subject: string,
+    message: string,
+    attachments?: Mail.Attachment[]
+}
 
-export const generateInvoicePDF = async (invoice: InvoicesWithAccountClientContractProject) => {
+// Function to send email with custom parameters
+export async function sendEmail({sender, recipients, subject, message, attachments}: EmailProps) {
+    return await transport.sendMail({
+        from: sender,
+        to: recipients,
+        subject,
+        html: message,
+        text: message,
+        attachments
+    });
+}
+
+// Function to generate invoice PDF
+export async function generateInvoicePDF(invoice: InvoicesWithAccountContactContractProject): Promise<Buffer> {
     try {
-        console.log('Generating PDF for invoice:', invoice?.id);
-
-        <Document></Document>
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // In a real implementation, you would return the PDF data or URL
-        // For now, we'll just return a success message
-        return {
-            success: true,
-            message: `Invoice #${invoice?.invoiceNumber.toString()} PDF generated successfully`
-        };
+        // Generate PDF buffer
+        return await renderToBuffer(<InvoicePdf invoice={invoice} />);
     } catch (error) {
-        console.error('Error generating invoice PDF:', error);
-        return {
-            success: false,
-            message: 'Failed to generate invoice PDF'
-        };
+        console.error('Error generating PDF:', error);
+        throw new Error('Failed to generate invoice PDF');
     }
-};
+}
 
-/**
- * Sends an email with the invoice to the client
- * @param invoice The invoice to send
- */
-export const emailInvoiceToClient = async (invoice: InvoicesWithAccountClientContractProject) => {
+// Function to email invoice to client
+export async function emailInvoiceToContact(invoice: InvoicesWithAccountContactContractProject) {
     try {
-        // In a real implementation, you would use a service like SendGrid, Mailgun, or AWS SES
-        // to send the email. For now, we'll just simulate the process.
-        
-        if (!invoice?.Client?.clientEmail) {
+        if (!invoice?.Contact?.contactEmail) {
             return {
                 success: false,
                 message: 'Client email address not found'
             };
         }
+
+        // Generate PDF buffer
+        const pdfBuffer = await generateInvoicePDF(invoice);
         
-        console.log('Sending invoice email to:', invoice.Client.clientEmail);
+        const sender = {
+            name: invoice.Account?.accountName || "Opus",
+            address: invoice.Account?.accountEmail || "no-reply@opus.io"
+        };
+
+        const recipients = [{
+            name: invoice.Contact.contactName || "Client",
+            address: invoice.Contact.contactEmail
+        }];
+
+        const subject = `Invoice #${invoice.invoiceNumber} from ${invoice.Account?.accountName || "Opus"}`;
         
-        // Simulate email sending delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // In a real implementation, you would return the email sending result
-        // For now, we'll just return a success message
+        const message = `
+            <html>
+                <body>
+                    <h2>Invoice #${invoice.invoiceNumber}</h2>
+                    <p>Dear ${invoice.Contact.contactName},</p>
+                    <p>Please find attached the invoice #${invoice.invoiceNumber} for ${invoice.Project?.projectTitle || 'our services'}.</p>
+                    <p>Invoice Details:</p>
+                    <ul>
+                        <li>Invoice Number: ${invoice.invoiceNumber}</li>
+                        <li>Date: ${new Date(invoice.invoiceDate).toLocaleDateString()}</li>
+                        <li>Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}</li>
+                        <li>Amount Due: ${new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: invoice.currency || 'USD'
+                        }).format(invoice.totalDue)}</li>
+                    </ul>
+                    <p>If you have any questions regarding this invoice, please don't hesitate to contact us.</p>
+                    <p>Thank you for your business!</p>
+                    <p>Best regards,<br>${invoice.Account?.accountName || "Opus"}</p>
+                </body>
+            </html>
+        `;
+
+        const result = await sendEmail({
+            sender,
+            recipients,
+            subject,
+            message,
+            attachments: [
+                {
+                    filename: `Invoice-${invoice.invoiceNumber}.pdf`,
+                    content: pdfBuffer,
+                    contentType: 'application/pdf'
+                }
+            ]
+        });
+
         return {
             success: true,
-            message: `Invoice #${invoice.invoiceNumber.toString()} sent to ${invoice.Client.clientEmail}`
+            message: 'Email sent successfully',
+            result
         };
     } catch (error) {
         console.error('Error sending invoice email:', error);
         return {
             success: false,
-            message: 'Failed to send invoice email'
+            message: error instanceof Error ? error.message : 'An unexpected error occurred'
         };
     }
-};
+}

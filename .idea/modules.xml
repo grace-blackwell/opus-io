@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Opus-io.iml" filepath="$PROJECT_DIR$/.idea/Opus-io.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/opus-io.iml" filepath="$PROJECT_DIR$/.idea/opus-io.iml" />
     </modules>
   </component>
 </project>

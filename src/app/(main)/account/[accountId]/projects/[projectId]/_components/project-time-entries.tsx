@@ -10,14 +10,17 @@ interface ProjectTimeEntriesProps {
   projectId: string
 }
 
-interface TimeEntryWithTask extends TimeEntry {
+interface TimeEntryWithRelations extends TimeEntry {
   Task?: {
     name: string
+  }
+  Project?: {
+    projectTitle: string
   }
 }
 
 export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProps) {
-  const [timeEntries, setTimeEntries] = useState<TimeEntryWithTask[]>([])
+  const [timeEntries, setTimeEntries] = useState<TimeEntryWithRelations[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -70,11 +73,19 @@ export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProp
           <div className="flex justify-between">
             <div>
               <p className="font-medium text-sm">
-                {entry.Task?.name || 'Unnamed Task'}
+                {entry.Task?.name || entry.Project?.projectTitle || 'Unnamed Entry'}
+                {!entry.Task && entry.projectId && (
+                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                    Project
+                  </span>
+                )}
               </p>
               <p className="text-xs text-muted-foreground">
                 {format(new Date(entry.startTime), 'MMM dd, yyyy • h:mm a')}
               </p>
+              {entry.description && (
+                <p className="text-xs mt-1 text-muted-foreground italic">"{entry.description}"</p>
+              )}
             </div>
             <div className="text-sm font-medium">
               {entry.duration ? formatDuration(entry.duration) : 'In progress'}

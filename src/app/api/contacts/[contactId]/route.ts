@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { contactId: string } }
 ) {
   try {
-    const { contactId } = params;
+    const parameters = await params;
+    const { contactId } = parameters;
 
     if (!contactId) {
       return NextResponse.json(
@@ -18,7 +19,7 @@ export async function GET(
     const contact = await db.contact.findUnique({
       where: { id: contactId },
       include: {
-        Tags: true,
+        ContactTags: true,
         BillingAddress: true,
         projects: true
       }
@@ -46,7 +47,8 @@ export async function DELETE(
   { params }: { params: { contactId: string } }
 ) {
   try {
-    const { contactId } = params;
+    const parameters = await params;
+    const { contactId } = parameters;
 
     if (!contactId) {
       return NextResponse.json(
