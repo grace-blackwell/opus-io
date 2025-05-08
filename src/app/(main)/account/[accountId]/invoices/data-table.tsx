@@ -4,7 +4,7 @@ import React from 'react'
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table'
 import {ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable} from '@tanstack/react-table'
 import {useModal} from "@/providers/modal-provider";
-import {Plus, Search} from "lucide-react";
+import {Search} from "lucide-react";
 import {Input} from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
@@ -28,17 +28,16 @@ export default function DataTable<TData, TValue>({columns, data, filterValue, ac
         <>
             <div className='w-full'>
                 <div className='flex items-center py-4'>
-                    <Search />
                     <Input
-                        placeholder='Search Invoices...'
+                        placeholder={`Search Invoices...`}
                         value={(table.getColumn(filterValue)?.getFilterValue() as string) ?? ''}
                         onChange={(event) => table.getColumn(filterValue)?.setFilterValue(event.target.value)}
                         className='max-w-sm'
                     />
                 </div>
             </div>
-            <div className='bg-muted rounded-md'>
-                <Table>
+            <div>
+                <Table className={'shadow-base-300/20 shadow-sm'}>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>

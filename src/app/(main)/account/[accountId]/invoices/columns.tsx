@@ -10,7 +10,7 @@ import { generateInvoicePDF, emailInvoiceToContact } from "@/lib/invoice-utils";
 import { InvoicesWithAccountContactContractProject } from "@/lib/types";
 import { useModal } from "@/providers/modal-provider";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, MoreHorizontal, FileText, Mail } from "lucide-react";
+import {Edit, MoreHorizontal, FileText, Mail, MailOpen} from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import {Badge} from "@/components/ui/badge";
@@ -27,11 +27,11 @@ export const columns: ColumnDef<InvoicesWithAccountContactContractProject>[] = [
     },
     {
         accessorKey: "invoiceNumber",
-        header: "Invoice #",
+        header: "INVOICE #",
         cell: ({ row }) => {
             const invoiceNumber = row.getValue("invoiceNumber") as string;
             return (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 font-medium text-primary">
                     {invoiceNumber}
                 </div>
             );
@@ -39,7 +39,7 @@ export const columns: ColumnDef<InvoicesWithAccountContactContractProject>[] = [
     },
     {
         accessorKey: "projectTitle",
-        header: "Project",
+        header: "PROJECT",
         cell: ({ row }) => {
             const projectTitle = row.original?.Project?.projectTitle;
             return (
@@ -51,7 +51,7 @@ export const columns: ColumnDef<InvoicesWithAccountContactContractProject>[] = [
     },
     {
         accessorKey: "Contact",
-        header: "Contact",
+        header: "CONTACT",
         cell: ({ row }) => {
             const ContactName = row.original?.Contact?.contactName;
             return (
@@ -63,7 +63,7 @@ export const columns: ColumnDef<InvoicesWithAccountContactContractProject>[] = [
     },
     {
         accessorKey: "totalDue",
-        header: "Total Due",
+        header: "TOTAL DUE",
         cell: ({ row }) => {
             const totalDue = row.getValue("totalDue") as number;
             const currency = row.original?.currency || 'USD';
@@ -73,14 +73,14 @@ export const columns: ColumnDef<InvoicesWithAccountContactContractProject>[] = [
             }).format(totalDue);
             return (
                 <div className="flex items-center gap-4">
-                    <Badge className='bg-green-600'>{formatted}</Badge>
+                    <span className='badge badge-soft badge-success badge-md'>{formatted}</span>
                 </div>
             );
         },
     },
     {
         accessorKey: "paymentStatus",
-        header: "Status",
+        header: "STATUS",
         cell: ({ row }) => {
             const paymentStatus = row.getValue("paymentStatus") as string;
             return (
@@ -140,9 +140,9 @@ const CellActions: React.FC<CellActionsProps> = ({ rowData }) => {
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Invoice Details
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="flex gap-2">
-                        <PDFDownloadLink document={<InvoicePdf invoice={rowData}/>} className='flex'>
-                            <span>
+                    <DropdownMenuItem>
+                        <PDFDownloadLink document={<InvoicePdf invoice={rowData}/>}>
+                            <span className='flex gap-2'>
                                 <FileText className="h-4 w-4 mr-2" />
                                 Export to PDF
                             </span>
@@ -202,7 +202,7 @@ ${rowData.Account?.accountName || "Opus"}
                             });
                         }}
                     >
-                        <Mail className="h-4 w-4 mr-2" />
+                        <MailOpen className="h-4 w-4 mr-2" />
                         Open in Email Contact
                     </DropdownMenuItem>
                     <DropdownMenuItem

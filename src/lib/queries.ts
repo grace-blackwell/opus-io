@@ -875,6 +875,64 @@ export const deleteMedia = async (mediaId:string) => {
     });
 }
 
+export const getDiagrams = async (projectId: string) => {
+    try {
+        return await db.diagram.findMany({
+            where: {
+                projectId: projectId
+            },
+            orderBy: {
+                updatedAt: 'desc'
+            }
+        });
+    } catch (error) {
+        console.error('Error getting diagrams:', error);
+        return null
+    }
+}
+
+export const getDiagram = async (diagramId: string) => {
+    try {
+        return await db.diagram.findUnique({
+            where: {
+                id: diagramId
+            }
+        });
+    } catch (error) {
+        console.error('Error getting diagram:', error);
+        return null
+    }
+}
+
+export const createDiagram = async (accountId: string, projectId: string, data: { name: string, content: string, thumbnail?: string }) => {
+    return db.diagram.create({
+        data: {
+            name: data.name,
+            content: data.content,
+            thumbnail: data.thumbnail,
+            projectId: projectId,
+            accountId: accountId
+        }
+    });
+}
+
+export const updateDiagram = async (diagramId: string, data: { name?: string, content?: string, thumbnail?: string }) => {
+    return db.diagram.update({
+        where: {
+            id: diagramId
+        },
+        data
+    });
+}
+
+export const deleteDiagram = async (diagramId: string) => {
+    return db.diagram.delete({
+        where: {
+            id: diagramId
+        }
+    });
+}
+
 export const getKanbanDetails = async (kanbanId: string) => {
     try{
         return await db.kanban.findUnique({

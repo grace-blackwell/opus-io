@@ -91,29 +91,29 @@ const KanbanTask = ({setAllTasks, task, allTasks, accountId, index}: Props) => {
                     <div {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
                         <AlertDialog>
                             <DropdownMenu>
-                                <Card className="my-4 bg-background border-none shadow-md rounded-none">
+                                <Card className="my-4 bg-base-100 border-none shadow-md rounded-none">
                                     <CardHeader>
                                         <CardTitle className="flex items-center justify-between">
-                                            <span className="text-sm">{task.name}</span>
+                                            <span className="text-sm text-base-content">{task.name}</span>
                                             <DropdownMenuTrigger className={'cursor-pointer'}>
-                                                <MoreHorizontalIcon className="text-muted-foreground" />
+                                                <MoreHorizontalIcon className="text-base-content" />
                                             </DropdownMenuTrigger>
                                         </CardTitle>
-                                        <span className="text-muted-foreground text-xs">{new Date().toLocaleDateString()}</span>
+                                        <span className="text-base-content text-xs">{new Date().toLocaleDateString()}</span>
                                         <div className="flex items-center flex-wrap gap-2">
                                             {task.Tags.map((tag) => (
                                                 <TagComponent key={tag.id} title={tag.name} colorName={tag.color} />
                                             ))}
                                         </div>
-                                        <CardDescription className={'text-xs'}>{task.description}</CardDescription>
+                                        <CardDescription className={'text-xs text-base-content'}>{task.description}</CardDescription>
                                         <div className={'flex gap-2 py-2 items-center'}>
                                             <Briefcase size={15} className={'text-primary'} />
                                             <div className={'flex flex-col justify-center'}>
-                                                    <span className="text-sm font-bold text-foreground">{task.Project?.projectTitle}</span>
+                                                    <span className="text-sm font-bold text-base-content">{task.Project?.projectTitle}</span>
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <div className="px-4 py-2 border-t border-muted">
+                                    <div className="px-4 py-2 border-t border-base-content">
                                         <TaskTimeTracker 
                                             task={task} 
                                             onTimeUpdate={(updatedTask) => {
@@ -121,8 +121,8 @@ const KanbanTask = ({setAllTasks, task, allTasks, accountId, index}: Props) => {
                                             }} 
                                         />
                                     </div>
-                                    <CardFooter className="p-2 border-t-1 border-muted flex items-center justify-between">
-                                        <span className="text-sm font-bold">
+                                    <CardFooter className="p-2 border-t-1 border-base-content flex items-center justify-between">
+                                        <span className="text-sm font-bold text-base-content">
                                             {!!task.value &&
                                                 new Intl.NumberFormat(undefined, {
                                                     style: "currency",
@@ -140,14 +140,14 @@ const KanbanTask = ({setAllTasks, task, allTasks, accountId, index}: Props) => {
                                                 <div className="flex justify-between space-x-4">
                                                     <Avatar>
                                                         <AvatarImage />
-                                                        <AvatarFallback className="bg-primary text-white">{task.Client?.clientName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                                        <AvatarFallback className="bg-primary text-white">{task.Contact?.contactName.slice(0, 2).toUpperCase()}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="space-y-1">
-                                                        <h4 className="text-sm font-semibold">{task.Client?.clientName}</h4>
-                                                        <p className="text-sm text-muted-foreground">{task.Client?.clientEmail}</p>
+                                                        <h4 className="text-sm font-semibold">{task.Contact?.contactName}</h4>
+                                                        <p className="text-sm text-muted-foreground">{task.Contact?.contactName}</p>
                                                         <div className="flex items-center pt-2">
                                                             <Contact2 className="mr-2 h-4 w-4 opacity-70" />
-                                                            <span className="text-xs text-muted-foreground">Joined {task.Client?.createdAt.toLocaleDateString()}</span>
+                                                            <span className="text-xs text-muted-foreground">Joined {task.Contact?.createdAt.toLocaleDateString()}</span>
                                                         </div>
                                                     </div>
                                                 </div>

@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import DeleteButton from './delete-button'
 import EditContactButton from './edit-contact-button'
 import ContactTagDisplay from '@/components/global/contact-tag-display'
-import ContactTagComponent from '@/components/global/contact-tag'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {Mail, Phone, Globe, MapPin, Filter, X, List, SquareUserRound} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -94,8 +93,8 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
     <AlertDialog>
       <Tabs defaultValue="list" className="w-full" onValueChange={setActiveTab}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-          <TabsList className={'bg-background rounded-none'}>
-            <TabsTrigger value="list"> <List className={'text-primary'}/> List View</TabsTrigger>
+          <TabsList className={'bg-base-100 rounded-none'}>
+            <TabsTrigger value="list"> <List className={'text-primary cursor-pointer'}/> List View</TabsTrigger>
             <TabsTrigger value="card"> <SquareUserRound className={'text-primary'}/> Card View</TabsTrigger>
           </TabsList>
           
@@ -103,7 +102,7 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
             {/* Filter by tags */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="default" size="sm" className="flex items-center gap-1 rounded-none">
+                <Button variant="default" size="sm" className="flex items-center gap-1 rounded-none bg-primary/60 cursor-pointer">
                   <Filter className="h-4 w-4" />
                   Filter by Tags
                   {selectedTags.length > 0 && (
@@ -140,7 +139,7 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                         )
                       })
                     ) : (
-                      <p className="text-sm text-muted-foreground">No tags available</p>
+                      <p className="text-sm text-neutral-content">No tags</p>
                     )}
                   </div>
                   
@@ -158,8 +157,7 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                 </div>
               </PopoverContent>
             </Popover>
-            
-            {/* Clear all filters button */}
+
             {(searchQuery || selectedTags.length > 0) && (
               <Button 
                 variant="ghost" 
@@ -175,9 +173,8 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
         </div>
         
         <TabsContent value="list" className="w-full">
-          {/* List View */}
-          <Command className='bg-transparent max-w-6xl shadow-sm'>
-            <CommandInput 
+          <Command className='bg-transparent w-full shadow-sm'>
+            <CommandInput
               placeholder='Search Contacts...' 
               value={searchQuery}
               onValueChange={setSearchQuery}
@@ -187,15 +184,14 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
               <CommandGroup heading={`Contacts (${filteredContacts.length})`}>
                 {filteredContacts.length > 0
                   ? (filteredContacts.map((contact) => (
-                    <CommandItem key={contact.id} className='max-w-3xl h-auto min-h-20 my-2 text-primary border-[1px] p-4 cursor-pointer'>
-                      <Link href={`/account/${accountId}/contacts/${contact.id}`} className='flex gap-4 w-full h-full'>
+                    <CommandItem key={contact.id} className='max-w-4xl h-20 my-2 text-primary border-[1px] border-border p-4 cursor-pointer group'>
+                      <Link href={`/account/${accountId}/contacts/${contact.id}`} className='flex gap-4 w-full'>
                         <div className='flex flex-col justify-between w-full'>
                           <div className='flex flex-col'>
                             <div className="flex justify-between items-center">
-                              <span className="font-bold text-foreground">{contact.contactName}</span>
+                              <span className="font-bold text-base-content text-base-content group-hover:text-primary-content">{contact.contactName}</span>
                               <div className="flex gap-1">
                                 {contact.ContactTags.map(tag => {
-                                  // Check if the color is a custom color (starts with CUSTOM:)
                                   const isCustomColor = tag.color.startsWith('CUSTOM:');
                                   const colorHex = isCustomColor ? tag.color.split(':')[1] : undefined;
                                   const colorName = isCustomColor ? 'CUSTOM' : tag.color;
@@ -228,7 +224,7 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                           contactId={contact.id}
                         />
                         <AlertDialogTrigger asChild>
-                          <Button size={'sm'} variant={'destructive'} className='text-black bg-red-600/50 w-20 hover:bg-red-600 hover:text-white'>
+                          <Button size={'sm'} variant={'destructive'} className='text-error-content bg-error/50 w-20 hover:bg-error hover:text-white cursor-pointer'>
                             Delete
                           </Button>
                         </AlertDialogTrigger>
@@ -246,7 +242,7 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                           <AlertDialogCancel>
                             Cancel
                           </AlertDialogCancel>
-                          <AlertDialogAction className='bg-destructive hover:bg-destructive'>
+                          <AlertDialogAction className='bg-error hover:bg-error'>
                             <DeleteButton contactId={contact.id} />
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -254,7 +250,7 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                     </CommandItem>
                     )
                   ))
-                  : <div className='text-muted-foreground text-center p-4'>
+                  : <div className='text-neutral-content text-center p-4'>
                     No Contacts
                   </div>
                 }
@@ -262,116 +258,131 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
             </CommandList>
           </Command>
         </TabsContent>
-        
+
         <TabsContent value="card" className="w-full">
-          {/* Card View */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredContacts.length > 0 ? (
-              filteredContacts.map((contact) => (
-                <Card key={contact.id} className="overflow-hidden bg-muted border-none rounded-none">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <Link href={`/account/${accountId}/contacts/${contact.id}`} className="hover:underline">
-                        <CardTitle className="text-xl">{contact.contactName}</CardTitle>
-                      </Link>
-                      <div className="flex gap-2">
-                        <EditContactButton 
-                          user={user} 
-                          contactId={contact.id}
-                          size="sm"
-                        />
-                        <AlertDialogTrigger asChild>
-                          <Button size={'sm'} variant={'destructive'} className='text-black bg-red-600/50 w-20 hover:bg-red-600 hover:text-white'>
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
+          <Command className='bg-transparent w-full shadow-sm'>
+            <CommandInput
+                placeholder='Search Contacts...'
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+            />
+            <CommandList>
+              <CommandEmpty>No contacts found.</CommandEmpty>
+              <CommandGroup heading={`Contacts (${filteredContacts.length})`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredContacts.length > 0 ? (
+                      filteredContacts.map((contact) => (
+                          <CommandItem key={contact.id} className={'group cursor-pointer'}>
+                            <Card key={contact.id} className="overflow-hidden w-full h-full">
+                              <CardHeader className="pb-2">
+                                <div className="flex justify-between items-start">
+                                  <Link href={`/account/${accountId}/contacts/${contact.id}`} className="hover:underline">
+                                    <CardTitle className="text-xl">{contact.contactName}</CardTitle>
+                                  </Link>
+                                  <div className="flex gap-2">
+                                    <EditContactButton
+                                        user={user}
+                                        contactId={contact.id}
+                                        size="sm"
+                                    />
+                                    <AlertDialogTrigger asChild>
+                                      <Button size={'sm'} variant={'destructive'}
+                                              className='text-error-content bg-error/70 w-20 hover:bg-error hover:text-white cursor-pointer'>
+                                        Delete
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {contact.ContactTags.map(tag => {
+                                    const isCustomColor = tag.color.startsWith('CUSTOM:');
+                                    const colorHex = isCustomColor ? tag.color.split(':')[1] : undefined;
+                                    const colorName = isCustomColor ? 'CUSTOM' : tag.color;
+
+                                    return (
+                                        <ContactTagDisplay
+                                            key={tag.id}
+                                            title={tag.name}
+                                            colorName={colorName}
+                                            colorHex={colorHex}
+                                        />
+                                    );
+                                  })}
+                                </div>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-3">
+                                  {contact.contactEmail && (
+                                      <div className="flex items-center gap-2">
+                                        <Mail className="h-4 w-4 text-primary"/>
+                                        <span className="text-sm">{contact.contactEmail}</span>
+                                      </div>
+                                  )}
+                                  {contact.contactPhone && (
+                                      <div className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4 text-primary"/>
+                                        <span className="text-sm">{contact.contactPhone}</span>
+                                      </div>
+                                  )}
+                                  {contact.contactWebsite && (
+                                      <div className="flex items-center gap-2">
+                                        <Globe className="h-4 w-4 text-primary"/>
+                                        <span className="text-sm">{contact.contactWebsite}</span>
+                                      </div>
+                                  )}
+
+                                  {contact.BillingAddress && (
+                                      <div className="mt-4 pt-4 border-t">
+                                        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                                          <MapPin className="h-4 w-4 text-primary"/>
+                                          Billing Address
+                                        </h3>
+                                        <div className="text-sm">
+                                          <p>{contact.BillingAddress.street}</p>
+                                          <p>
+                                            {contact.BillingAddress.city}, {contact.BillingAddress.state} {contact.BillingAddress.zipCode}
+                                          </p>
+                                          <p>{contact.BillingAddress.country}</p>
+                                        </div>
+                                      </div>
+                                  )}
+                                </div>
+                              </CardContent>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className='text-left'>
+                                    Are you sure?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className='text-left'>
+                                    This action cannot be undone. This will permanently delete the contact and all related
+                                    data.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className='flex items-center'>
+                                  <AlertDialogCancel>
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction className='bg-error hover:bg-error'>
+                                    <DeleteButton contactId={contact.id}/>
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </Card>
+                          </CommandItem>
+                      ))
+                  ) : (
+                      <div className="col-span-full text-center text-neutral p-8">
+                        No contacts found
                       </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {contact.ContactTags.map(tag => {
-                        const isCustomColor = tag.color.startsWith('CUSTOM:');
-                        const colorHex = isCustomColor ? tag.color.split(':')[1] : undefined;
-                        const colorName = isCustomColor ? 'CUSTOM' : tag.color;
-                        
-                        return (
-                          <ContactTagDisplay
-                            key={tag.id}
-                            title={tag.name}
-                            colorName={colorName} 
-                            colorHex={colorHex}
-                          />
-                        );
-                      })}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {contact.contactEmail && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-primary" />
-                          <span className="text-sm">{contact.contactEmail}</span>
-                        </div>
-                      )}
-                      {contact.contactPhone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-primary" />
-                          <span className="text-sm">{contact.contactPhone}</span>
-                        </div>
-                      )}
-                      {contact.contactWebsite && (
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-primary" />
-                          <span className="text-sm">{contact.contactWebsite}</span>
-                        </div>
-                      )}
-                      
-                      {contact.BillingAddress && (
-                        <div className="mt-4 pt-4 border-t">
-                          <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" />
-                            Billing Address
-                          </h3>
-                          <div className="text-sm text-muted-foreground">
-                            <p>{contact.BillingAddress.street}</p>
-                            <p>
-                              {contact.BillingAddress.city}, {contact.BillingAddress.state} {contact.BillingAddress.zipCode}
-                            </p>
-                            <p>{contact.BillingAddress.country}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className='text-left'>
-                        Are you sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className='text-left'>
-                        This action cannot be undone. This will permanently delete the contact and all related data.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className='flex items-center'>
-                      <AlertDialogCancel>
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction className='bg-destructive hover:bg-destructive'>
-                        <DeleteButton contactId={contact.id} />
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </Card>
-              ))
-            ) : (
-              <div className="col-span-full text-center text-muted-foreground p-8">
-                No contacts found
-              </div>
-            )}
-          </div>
+                  )}
+                </div>
+              </CommandGroup>
+            </CommandList>
+          </Command>
         </TabsContent>
       </Tabs>
     </AlertDialog>
-  )
+)
 }
 
 export default ContactsView

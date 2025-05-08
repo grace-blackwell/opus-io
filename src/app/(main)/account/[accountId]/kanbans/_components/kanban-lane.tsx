@@ -118,18 +118,18 @@ const KanbanLane: FC<KanbanLaneProps> = ({setAllTasks, allTasks, tasks, kanbanId
                         <AlertDialog>
                             <DropdownMenu>
                                 <div
-                                    className="bg-muted h-full w-[300px] px-2 relative overflow-visible rounded-md flex-shrink-0 "
+                                    className="bg-neutral h-full w-[300px] px-2 relative overflow-visible rounded-md flex-shrink-0 "
                                 >
                                     <div
                                         {...provided.dragHandleProps}
                                         className=" h-14 backdrop-blur-lg absolute top-0 left-0 right-0 z-10 "
                                     >
                                         <div
-                                            className="h-full flex bg-muted items-center p-2 justify-between cursor-grab"
+                                            className="h-full flex bg-neutral items-center p-2 justify-between cursor-grab"
                                         >
                                              {/*{laneDetail.order}*/}
                                             <div className="flex items-center w-full gap-2">
-                                                <span className="font-bold text-sm">{laneDetail.name}</span>
+                                                <span className="font-bold text-sm text-neutral-content">{laneDetail.name}</span>
                                             </div>
                                             <div className="flex items-center flex-row">
                                                 <Badge className="bg-white text-black">{amt.format(laneAmt)}</Badge>

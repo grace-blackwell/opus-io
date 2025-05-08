@@ -1024,34 +1024,32 @@ const QuickbooksStyleGenerator: React.FC<Props> = ({ accountId, accountDetails, 
                         Copy and paste your notes, emails, or any text with pricing, descriptions, and customer info. Our AI will extract the relevant details.
                     </p>
                     
-                    <h3 className="text-sm font-medium mb-2">How to start your invoice</h3>
+                    {/*<h3 className="text-sm font-medium mb-2">How to start your invoice</h3>*/}
                     
-                    <div className="flex gap-2 mb-4">
-                        <div className="flex items-center gap-2 p-2 border rounded-md bg-[#f0fbf9] border-[#84e5db]">
-                            <div className="bg-[#D4F7F1] p-1 rounded-full">
-                                <FileText className="h-4 w-4 text-[#024B3F]" />
-                            </div>
-                            <span className="text-sm font-medium">An example</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-2 border rounded-md">
-                            <div className="bg-[#BFDDFF] p-1 rounded-full">
-                                <Upload className="h-4 w-4 text-[#08284D]" />
-                            </div>
-                            <span className="text-sm font-medium">Add brand</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-2 border rounded-md">
-                            <div className="bg-[#EAF7D4] p-1 rounded-full">
-                                <FileUp className="h-4 w-4 text-[#365600]" />
-                            </div>
-                            <span className="text-sm font-medium">Add file</span>
-                        </div>
-                    </div>
+                    {/*<div className="flex gap-2 mb-4">*/}
+                    {/*    <div className="flex items-center gap-2 p-2 border rounded-md bg-[#f0fbf9] border-[#84e5db]">*/}
+                    {/*        <div className="bg-[#D4F7F1] p-1 rounded-full">*/}
+                    {/*            <FileText className="h-4 w-4 text-[#024B3F]" />*/}
+                    {/*        </div>*/}
+                    {/*        <span className="text-sm font-medium">An example</span>*/}
+                    {/*    </div>*/}
+                    {/*    <div className="flex items-center gap-2 p-2 border rounded-md">*/}
+                    {/*        <div className="bg-[#BFDDFF] p-1 rounded-full">*/}
+                    {/*            <Upload className="h-4 w-4 text-[#08284D]" />*/}
+                    {/*        </div>*/}
+                    {/*        <span className="text-sm font-medium">Add brand</span>*/}
+                    {/*    </div>*/}
+                    {/*    <div className="flex items-center gap-2 p-2 border rounded-md">*/}
+                    {/*        <div className="bg-[#EAF7D4] p-1 rounded-full">*/}
+                    {/*            <FileUp className="h-4 w-4 text-[#365600]" />*/}
+                    {/*        </div>*/}
+                    {/*        <span className="text-sm font-medium">Add file</span>*/}
+                    {/*    </div>*/}
+                    {/*</div>*/}
                     
                     <Textarea 
                         className="min-h-[150px] mb-2"
-                        placeholder="Paste your notes here, for example:
-
-Just finished the project for John Smith. Here's the breakdown:
+                        placeholder="Just finished the project for John Smith. Here's the breakdown:
 - Website design: $1,500
 - Logo creation: $500
 - SEO setup: $800

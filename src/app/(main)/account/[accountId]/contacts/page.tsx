@@ -29,7 +29,7 @@ const AllContactsPage = async ({params}: Props) => {
     return (
         <div className='flex flex-col'>
             <div className="flex justify-between items-center mb-6">
-                <CreateContactButton user={user} className='w-[200px]'/>
+                <CreateContactButton user={user} className='w-[200px] cursor-pointer'/>
             </div>
             <ContactsView 
                 contacts={contacts} 

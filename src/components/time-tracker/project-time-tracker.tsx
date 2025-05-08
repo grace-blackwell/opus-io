@@ -323,11 +323,11 @@ export default function ProjectTimeTracker({ project, onTimeUpdate }: ProjectTim
   const totalHours = elapsedTime / 3600;
 
   return (
-    <Card className={'bg-background border-none rounded-none'}>
+    <Card className={'border-none rounded-none'}>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-secondary" />
+            <Clock className="h-5 w-5 text-accent" />
             Time Tracking
           </div>
           <div className="text-2xl font-bold text-primary">
@@ -342,11 +342,11 @@ export default function ProjectTimeTracker({ project, onTimeUpdate }: ProjectTim
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Time</p>
+              <p className="text-sm font-medium">Total Time</p>
               <p className="text-lg font-semibold">{formatDuration(elapsedTime)}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Hours</p>
+              <p className="text-sm font-medium">Total Hours</p>
               <p className="text-lg font-semibold">{totalHours.toFixed(2)}</p>
             </div>
           </div>

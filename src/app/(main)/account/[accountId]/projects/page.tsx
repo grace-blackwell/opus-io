@@ -39,7 +39,7 @@ const ProjectsPage = async ({ params }: Props) => {
         <AlertDialog>
             <div className="flex flex-col">
                 <AddProjectButton accountId={parameters.accountId} className="w-[200px] mb-6" />
-                <Command className="bg-transparent max-w-4xl">
+                <Command className="bg-transparent w-full">
                     <CommandInput placeholder="Search Projects..." className="" />
                     <CommandList>
                         <CommandEmpty>No projects found.</CommandEmpty>

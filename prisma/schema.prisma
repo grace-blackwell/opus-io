@@ -88,6 +88,7 @@ model Account {
   country               String
   Subscription          Subscription?
   Media                 Media[]
+  Diagrams              Diagram[]
   Notifications         Notification[]
   SidebarOption         SidebarOption[]
   Contacts              Contact[]
@@ -130,6 +131,22 @@ model Media {
   Account               Account             @relation(fields: [accountId], references: [id])
 
   @@index([accountId])
+}
+
+model Diagram {
+  id                    String              @id @default(nanoid())
+  name                  String
+  content               String              @db.Text
+  thumbnail             String?             @db.Text
+  accountId             String
+  projectId             String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  Account               Account             @relation(fields: [accountId], references: [id])
+  Project               Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([projectId])
 }
 
 model Subscription {
@@ -204,6 +221,7 @@ model Project {
   invoices              Invoice[]
   Tasks                 Task[]
   TimeEntries           TimeEntry[]
+  Diagrams              Diagram[]
   isTracking            Boolean           @default(false)
   trackedStartTime      DateTime?
   totalTrackedTime      Int               @default(0) // Total tracked time in seconds

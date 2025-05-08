@@ -302,7 +302,7 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
   return (
     <>
       <div className="flex items-center gap-2 pt-2">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1 text-sm text-base-content">
           <Clock size={14} />
           <span>{formatTime(elapsedTime)}</span>
         </div>
@@ -328,7 +328,7 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
                     size="sm" 
                     onClick={handleStartTracking}
                     disabled={loading}
-                    className="h-5 px-1 rounded-none"
+                    className="h-5 px-1 rounded-none text-base-content"
                   >
                     <Play size={14} className={'text-green-600'}/>
                     Start

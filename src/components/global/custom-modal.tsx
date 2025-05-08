@@ -21,7 +21,7 @@ const CustomModal = ({title, subheading, children, defaultOpen = false}: Props) 
         <Dialog open={isModalOpen} onOpenChange={(open) => {
             if (!open) setClose();
         }}>
-            <DialogContent className='md:max-h-[700px] md:h-fit bg-muted'>
+            <DialogContent className='md:max-h-[700px] md:h-fit'>
                 <DialogHeader className='pt-8 text-left'>
                     <DialogTitle className='text-2xl font-bold'>{title}</DialogTitle>
                     <DialogDescription>{subheading}</DialogDescription>

@@ -57,7 +57,7 @@ export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProp
 
   if (timeEntries.length === 0) {
     return (
-      <div className="text-center text-muted-foreground py-4">
+      <div className="text-center py-4">
         No time entries recorded yet
       </div>
     )
@@ -80,11 +80,11 @@ export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProp
                   </span>
                 )}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs">
                 {format(new Date(entry.startTime), 'MMM dd, yyyy • h:mm a')}
               </p>
               {entry.description && (
-                <p className="text-xs mt-1 text-muted-foreground italic">"{entry.description}"</p>
+                <p className="text-xs mt-1 italic">"{entry.description}"</p>
               )}
             </div>
             <div className="text-sm font-medium">

@@ -267,13 +267,12 @@ const ContactTagCreator = ({ getSelectedContactTags, accountId, defaultTags }: P
                         <div className="relative flex-grow">
                             <CommandInput placeholder="Enter custom tag name..." value={value} onValueChange={setValue} />
                         </div>
-                        
-                        {/* Color selection */}
+
                         <div className="flex items-center gap-2">
                             {!isUsingCustomColor ? (
                                 <div className="flex items-center gap-1">
                                     <Button 
-                                        variant="outline" 
+                                        variant="default"
                                         size="sm" 
                                         onClick={toggleCustomColor}
                                         className="text-xs"

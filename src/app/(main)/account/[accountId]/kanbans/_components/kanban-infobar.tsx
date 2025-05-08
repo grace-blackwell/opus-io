@@ -43,7 +43,7 @@ const KanbanInfobar = ({ accountId, kanbans, kanbanId }: Props) => {
                             variant='outline'
                             role={'combobox'}
                             aria-expanded={open}
-                            className={'w-[200px] justify-between'}
+                            className={'w-[200px] justify-between text-base-content'}
                         >
                             {value ? kanbans.find((kanban) =>
                                 kanban.id === value)?.name : "Select a kanban board..."}

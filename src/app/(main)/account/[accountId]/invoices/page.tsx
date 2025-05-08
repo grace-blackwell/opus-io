@@ -3,7 +3,6 @@ import { getAuthUserDetails } from "@/lib/queries";
 import { db } from "@/lib/db";
 import DataTable from "@/app/(main)/account/[accountId]/invoices/data-table";
 import { columns } from "@/app/(main)/account/[accountId]/invoices/columns";
-import CreateInvoiceButton from "./_components/create-invoice-button";
 import InvoiceDetails from "@/components/forms/invoice-details"
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -39,10 +38,9 @@ const InvoicesPage = async ({ params }: Props) => {
     return (
         <div className="flex flex-col">
             <div className="flex flex-wrap gap-4 mb-6">
-                <CreateInvoiceButton user={user} className="w-[200px]" />
                 <Link href={`/account/${params.accountId}/invoice-generator`}>
-                    <Button variant="outline" className="flex gap-2">
-                        <FileText size={16} />
+                    <Button variant="default" className="flex gap-2">
+                        <FileText size={16}/>
                         Invoice Generator
                     </Button>
                 </Link>
@@ -51,7 +49,7 @@ const InvoicesPage = async ({ params }: Props) => {
                 columns={columns}
                 data={invoices}
                 filterValue="invoiceNumber"
-                modalChildren={<InvoiceDetails accountId={params.accountId} />}
+                modalChildren={<InvoiceDetails accountId={params.accountId}/>}
             />
         </div>
     );

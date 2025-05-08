@@ -95,12 +95,12 @@ export default function TimeEntryList({ projectId, taskId }: TimeEntryListProps)
                 {entry.Task && (
                   <p className="text-sm font-medium">{entry.Task.name}</p>
                 )}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm">
                   {format(new Date(entry.startTime), 'MMM dd, yyyy • h:mm a')}
                   {entry.endTime && ` - ${format(new Date(entry.endTime), 'h:mm a')}`}
                 </p>
                 {entry.description && (
-                  <p className="text-sm mt-1 text-muted-foreground italic">"{entry.description}"</p>
+                  <p className="text-sm mt-1italic">"{entry.description}"</p>
                 )}
               </div>
               <div className="text-right">

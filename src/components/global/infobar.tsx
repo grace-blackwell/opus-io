@@ -7,8 +7,6 @@ import {UserButton} from "@clerk/nextjs";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 import {BellIcon} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {ModeToggle} from "@/components/global/mode-toggle";
-import {Card} from "@/components/ui/card";
 
 type Props = {
     notifications: NotificationWithUser | []
@@ -88,7 +86,6 @@ const InfoBar = ({notifications, className, accountId}: Props) => {
                                 </div>}
                         </SheetContent>
                     </Sheet>
-                    <ModeToggle />
                 </div>
             </div>
         </>

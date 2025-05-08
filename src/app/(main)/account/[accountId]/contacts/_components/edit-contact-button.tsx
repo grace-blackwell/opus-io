@@ -59,7 +59,7 @@ const EditContactButton = ({ user, contactId, size = "sm" }: Props) => {
         <Button 
             size={size}
             variant={'ghost'}
-            className="flex items-center gap-1 w-20 hover:bg-secondary"
+            className="flex items-center gap-1 w-20 hover:bg-secondary cursor-pointer"
             onClick={handleEditContact}
             disabled={isLoading}
         >

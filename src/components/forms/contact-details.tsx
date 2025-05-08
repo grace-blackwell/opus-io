@@ -199,14 +199,14 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
     const isLoading = form.formState.isSubmitting;
 
     return(
-        <Card className='w-full bg-muted'>
-            <CardHeader className='bg-muted'>
-                <CardTitle className="text-foreground">Contact Information</CardTitle>
-                <CardDescription className="text-muted-foreground">
+        <Card className='w-full bg-base-100'>
+            <CardHeader className={'text-base-content'}>
+                <CardTitle>Contact Information</CardTitle>
+                <CardDescription>
                     Please enter contact details.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="text-foreground bg-muted">
+            <CardContent className={'text-base-content'}>
                 <Form {...form}>
                     <form
                         onSubmit={(e) => {
@@ -224,7 +224,7 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
                                 }
                             });
                         }}
-                        className='space-y-4 w-full text-foreground bg-muted'>
+                        className='space-y-4 w-full'>
 
                         <div className='flex md:flex-row gap-4'>
                             <FormField disabled={isLoading} control={form.control} name="contactName"
@@ -321,12 +321,12 @@ const ContactDetails: React.FC<Props> = ({accountData, data}) => {
                                                <FormControl>
                                                    <Popover open={open} onOpenChange={setOpen}>
                                                        <PopoverTrigger asChild className='text-left'>
-                                                           <Button variant='outline' role='combobox' aria-expanded={open} className='bg-input text-muted-foreground border-none justify-between'>
+                                                           <Button variant='ghost' role='combobox' aria-expanded={open} className='justify-between'>
                                                                {field.value ? States.find((state) => state.value === field.value)?.label : 'State...'}
                                                                <ChevronsUpDown className='opacity-50' />
                                                            </Button>
                                                        </PopoverTrigger>
-                                                       <PopoverContent className='p-0 bg-input text-foreground'>
+                                                       <PopoverContent className='p-0'>
                                                            <Command>
                                                                <CommandInput
                                                                    placeholder='Search...'

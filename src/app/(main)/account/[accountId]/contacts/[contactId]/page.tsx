@@ -77,19 +77,19 @@ const ContactPage = async ({ params }: Props) => {
           <CardContent className="space-y-4">
             {contact.contactEmail && (
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
+                <Mail className="h-4 w-4 text-neutral-content" />
                 <span>{contact.contactEmail}</span>
               </div>
             )}
             {contact.contactPhone && (
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
+                <Phone className="h-4 w-4 text-neutral-content" />
                 <span>{contact.contactPhone}</span>
               </div>
             )}
             {contact.contactWebsite && (
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground" />
+                <Globe className="h-4 w-4 text-neutral-content" />
                 <span>{contact.contactWebsite}</span>
               </div>
             )}
@@ -103,7 +103,7 @@ const ContactPage = async ({ params }: Props) => {
             </CardHeader>
             <CardContent>
               <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                <MapPin className="h-4 w-4 text-neutral-content mt-1" />
                 <div>
                   <p>{contact.BillingAddress.street}</p>
                   <p>
@@ -131,7 +131,7 @@ const ContactPage = async ({ params }: Props) => {
                     <Badge>{project.status}</Badge>
                   </div>
                   {project.description && (
-                    <p className="text-sm text-muted-foreground mt-2">{project.description}</p>
+                    <p className="text-sm text-neutral-content mt-2">{project.description}</p>
                   )}
                 </div>
               ))}
@@ -158,7 +158,7 @@ const ContactPage = async ({ params }: Props) => {
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center mt-2">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-neutral-content">
                       Due: {new Date(invoice.dueDate).toLocaleDateString()}
                     </p>
                     <p className="font-medium">

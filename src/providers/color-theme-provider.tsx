@@ -3,7 +3,31 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 
-type ColorTheme = 'purple' | 'blue' | 'red' | 'yellow' | 'green' | 'orange' | 'pink'
+// Update to use FlyonUI theme names
+type ColorTheme = 'opus' | 'opusdark' | 'corporate' | 'ghibli' | 'gourmet' | 'luxury' | 'mintlify' | 'shadcn' | 'slack' |
+    'soft' | 'valorant' | 'ocean' | 'forest' | 'valentine' | 'synthwave' | 'black' | 'coffee' | 'caramellatte'
+
+// Define font families for each theme
+const themeFonts: Record<ColorTheme, string> = {
+  opus: "'Inter', sans-serif",
+  opusdark: "'Inter', sans-serif",
+  corporate: "'Public Sans', sans-serif",
+  ghibli: "'Amaranth', sans-serif",
+  gourmet: "'Rubik', sans-serif",
+  luxury: "'Archivo', sans-serif",
+  mintlify: "'Lato', sans-serif",
+  shadcn: "'Montserrat', sans-serif",
+  slack: "'Work Sans', sans-serif",
+  soft: "'Geist', sans-serif",
+  valorant: "'Geist Mono', monospace",
+  ocean: "'Poppins', sans-serif",
+  forest: "'Merriweather', serif",
+  valentine: "'Quicksand', sans-serif",
+  synthwave: "'VT323', monospace",
+  black: "'Oswald', sans-serif",
+  coffee: "'Playfair Display', serif",
+  caramellatte: "'Nunito', sans-serif"
+}
 
 interface ColorThemeContextProps {
   colorTheme: ColorTheme
@@ -17,23 +41,51 @@ export function ColorThemeProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [colorTheme, setColorTheme] = useState<ColorTheme>('purple')
-  const { theme } = useTheme()
+  // Default to 'opus' theme if no saved theme is found
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('opus')
+  const { theme, setTheme } = useTheme()
+  
+  // Apply the theme to the HTML element
+  const applyTheme = (themeValue: ColorTheme) => {
+    // Set the FlyonUI theme using data-theme attribute
+    document.documentElement.setAttribute('data-theme', themeValue)
+    
+    // Apply the font family for the selected theme
+    const fontFamily = themeFonts[themeValue];
+    if (fontFamily) {
+      document.documentElement.style.setProperty('--font-family', fontFamily);
+      // Also apply it directly to the body for immediate effect
+      document.body.style.fontFamily = fontFamily;
+    }
+    
+    // Update the next-themes provider based on color scheme
+    // Dark themes should use dark mode, light themes should use light mode
+    const darkThemes = ['opusdark', 'dark', 'shadcn', 'synthwave', 'black', 'coffee'];
+    if (darkThemes.includes(themeValue)) {
+      setTheme('dark')
+    } else {
+      setTheme('light')
+    }
+  }
   
   // Load saved theme from localStorage on component mount
   useEffect(() => {
     const savedColorTheme = localStorage.getItem('color-theme') as ColorTheme
     if (savedColorTheme) {
       setColorTheme(savedColorTheme)
-      document.documentElement.setAttribute('data-color-theme', savedColorTheme)
+      applyTheme(savedColorTheme)
+    } else {
+      // If no saved theme, apply the default 'opus' theme
+      applyTheme('opus')
     }
-  }, [])
+  }, [setTheme])
   
   // Update theme when changed
   const handleThemeChange = (newTheme: ColorTheme) => {
     setColorTheme(newTheme)
     localStorage.setItem('color-theme', newTheme)
-    document.documentElement.setAttribute('data-color-theme', newTheme)
+    applyTheme(newTheme)
+    console.log('Theme changed to:', newTheme);
   }
   
   return (

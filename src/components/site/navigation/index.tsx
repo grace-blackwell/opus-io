@@ -4,8 +4,6 @@ import {User} from '@clerk/nextjs/server'
 import React from 'react'
 import Link from "next/link";
 import {UserButton, useUser} from "@clerk/nextjs";
-import {ModeToggle} from "@/components/global/mode-toggle";
-import {useRouter} from "next/navigation";
 
 type Props = {
     user?: null | User
@@ -34,7 +32,6 @@ const Navigation = ({ user }: Props) => {
                     Login
                 </Link>
                 <UserButton />
-                <ModeToggle />
             </aside>
         </div>
     )

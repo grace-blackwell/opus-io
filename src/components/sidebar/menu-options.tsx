@@ -15,14 +15,10 @@ import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandL
 import Link from "next/link";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card";
 import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-    DrawerFooter
-} from "@/components/ui/drawer";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ColorThemeSelector } from "@/components/global/color-theme-selector";
 
 type Props = {
@@ -75,44 +71,41 @@ const MenuOptions = ({defaultOpen, sidebarOpt, sidebarLogo, details, user, id}: 
                             variant='ghost'>
                         <div className='flex items-center text-center gap-2'>
                             <div className='flex flex-col'>
-                                <h2 className='text-lg text-primary'>{details.accountName}</h2>
+                                <h2 className='text-lg text-base-content'>{details.accountName}</h2>
                                 {details.title}
-                                <span className='text-muted-foreground'>{details.accountEmail}</span>
+                                <span className='text-base-content'>{details.accountEmail}</span>
                             </div>
                         </div>
                     </Button>
                 </div>
                 <div className="flex items-center justify-between pl-4 mb-2">
-                    <Drawer>
-                        <DrawerTrigger asChild>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                             <Button
                                 variant='secondary'
                                 size={'icon'}
                                 title="Not feeling this color theme? Change it here."
-                                onClick={() => {}}
                             >
                                 <CiPalette className="h-6 w-6"/>
                             </Button>
-                        </DrawerTrigger>
-                        <DrawerContent>
-                            <div className='mx-auto w-full max-w-sm'>
-                                <DrawerHeader className='text-center'>
-                                    <DrawerTitle>Change Theme</DrawerTitle>
-                                    <DrawerDescription>Choose a color theme for your dashboard.</DrawerDescription>
-                                </DrawerHeader>
-                                <div className="p-4">
-                                    <ColorThemeSelector />
-                                </div>
-                                <DrawerFooter>
-                                    <p className="text-xs text-muted-foreground text-center">
-                                        The selected theme will be saved for your next visit.
-                                    </p>
-                                </DrawerFooter>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-64 p-2">
+                            <div className="space-y-2 px-2 pt-1 pb-2">
+                                <h3 className="font-medium text-center">Change Theme</h3>
+                                <p className="text-xs text-center">
+                                    Choose a color theme for your dashboard.
+                                </p>
                             </div>
-                        </DrawerContent>
-                    </Drawer>
+                            <ColorThemeSelector />
+                            <div className="pt-2 pb-1">
+                                <p className="text-xs text-center">
+                                    The selected theme will be saved for your next visit.
+                                </p>
+                            </div>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <p className='text-muted-foreground text-xs pr-10'> MENU </p>
-                + </div>
+                </div>
             <Separator className='mb-4'/>
             <nav className='relative'>
                 <Command className='rounded-lg overflow-visible bg-transparent'>
