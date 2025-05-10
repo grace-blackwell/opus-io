@@ -1,48 +1,61 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { currentUser } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function GET(req: NextRequest) {
-    try {
-        const user = await currentUser();
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const url = new URL(req.url);
-        const accountId = url.searchParams.get('accountId');
-        const tagId = url.searchParams.get('tagId');
-
-        if (!accountId) {
-            return NextResponse.json({ error: 'Account ID is required' }, { status: 400 });
-        }
-
-        const whereClause: any = {
-            accountId: accountId
-        };
-
-        // If tagId is provided, filter contacts by tag
-        if (tagId) {
-            whereClause.Tags = {
-                some: {
-                    id: tagId
-                }
-            };
-        }
-
-        const contacts = await db.contact.findMany({
-            where: whereClause,
-            include: {
-                ContactTags: true
-            },
-            orderBy: {
-                contactName: 'asc'
-            }
-        });
-
-        return NextResponse.json({ contacts });
-    } catch (error) {
-        console.error('Error fetching contacts:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const url = new URL(req.url);
+    const accountId = url.searchParams.get("accountId");
+    const tagId = url.searchParams.get("tagId");
+
+    if (!accountId) {
+      return NextResponse.json(
+        { error: "Account ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const whereClause: {
+      accountId: string;
+      ContactTags?: {
+        some: {
+          id: string;
+        };
+      };
+    } = {
+      accountId: accountId,
+    };
+
+    // If tagId is provided, filter contacts by tag
+    if (tagId) {
+      whereClause.ContactTags = {
+        some: {
+          id: tagId,
+        },
+      };
+    }
+
+    const contacts = await db.contact.findMany({
+      where: whereClause,
+      include: {
+        ContactTags: true,
+      },
+      orderBy: {
+        contactName: "asc",
+      },
+    });
+
+    return NextResponse.json({ contacts });
+  } catch (error) {
+    console.error("Error fetching contacts:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

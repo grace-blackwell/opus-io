@@ -1,6 +1,5 @@
-import {Prisma, Notification, Lane, Task, Contact, Tag, Project} from "@prisma/client"
+import {Prisma, Notification, Lane, Task, Contact, Tag, Project, User, Account, SidebarOption} from "@prisma/client"
 import {getAuthUserDetails, getKanbanDetails, getMedia} from "@/lib/queries";
-import {db} from "@/lib/db";
 import {z} from "zod";
 import Stripe from "stripe";
 
@@ -19,76 +18,34 @@ export type NotificationWithUser =
     } & Notification)[]
     | undefined;
 
-const __getProjectsWithAccountContactContracts = async (accountId: string) => {
-    return db.project.findFirst({
-        where: {
-            Account: {
-                id: accountId
-            }
-        },
-        include: {
-            Account: true,
-            Contact: true,
-            Contract: true,
-        },
-    });
-};
-
-const __getInvoicesWithAccountContactContractProject = async (accountId: string) => {
-    return db.invoice.findFirst({
-        where: {
-            Account: {
-                id: accountId
-            }
-        },
-        include: {
-            Account: true,
-            Contact: {
-                include: {
-                    BillingAddress: true
-                }
-            },
-            Project: true
-        },
-    });
-};
-
-const __getTasksWithAllRelations = async (laneId: string) => {
-    return db.task.findMany({
-        where: {
-            laneId: laneId
-        },
-        include: {
-            Contact: true,
-            Lane: true,
-            Tags: true,
-            Project: true,
-        }
-    })
-}
-
-const __getTasksWithTags = async (kanbanId: string) => {
-    return db.task.findMany({
-        where: {
-            Lane: {
-                kanbanId
-            }
-        },
-        include: {
-            Tags: true,
-            Contact: true,
-            Project: true,
-        }
-    })
+export type UserWithAccount = User & {
+    Account: Account & {
+    SidebarOption: SidebarOption[]
+    Contacts: Contact[]
+    }
 }
 
 export type AuthUserWithSidebarOptions = Prisma.PromiseReturnType<typeof getAuthUserDetails>
 
-export type ProjectsWithAccountContactContracts =
-    Prisma.PromiseReturnType<typeof __getProjectsWithAccountContactContracts>;
+export type ProjectsWithAccountContactContracts = Prisma.ProjectGetPayload<{
+    include: {
+        Account: true,
+        Contact: true,
+        Contract: true,
+    }
+}>;
 
-export type InvoicesWithAccountContactContractProject =
-    Prisma.PromiseReturnType<typeof __getInvoicesWithAccountContactContractProject>;
+export type InvoicesWithAccountContactContractProject = Prisma.InvoiceGetPayload<{
+    include: {
+        Account: true,
+        Contact: {
+            include: {
+                BillingAddress: true
+            }
+        },
+        Project: true
+    }
+}>;
 
 export type GetMediaFiles = Prisma.PromiseReturnType<typeof getMedia>;
 
@@ -110,9 +67,22 @@ export const CreateKanbanFormSchema = z.object({
 
 export type KanbanDetailsWithLanesCardsTasksTags = Prisma.PromiseReturnType<typeof getKanbanDetails>
 
-export type TaskWithTags = Prisma.PromiseReturnType<typeof __getTasksWithTags>
+export type TaskWithTags = Prisma.TaskGetPayload<{
+    include: {
+        Tags: true,
+        Contact: true,
+        Project: true
+    }
+}>
 
-export type TaskDetails = Prisma.PromiseReturnType<typeof __getTasksWithAllRelations>;
+export type TaskDetails = Prisma.TaskGetPayload<{
+    include: {
+        Contact: true,
+        Lane: true,
+        Tags: true,
+        Project: true
+    }
+}>;
 
 export const CreateFunnelFormSchema = z.object({
     name: z.string().min(1),
@@ -144,3 +114,51 @@ export type StripeCustomerType = {
 }
 
 export type PriceList = Stripe.ApiList<Stripe.Price>
+
+export type InvoiceItem = {
+    id: string
+    description: string
+    quantity: string
+    unitPrice: string
+    amount: string
+}
+
+export type BillingAddressType = {
+    street: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+} | null
+
+export type InvoiceDataType = {
+    id: string
+    invoiceNumber: number // Will be converted to BigInt in convertToInvoiceWithRelations
+    invoiceDate: Date
+    dueDate: Date
+    paymentStatus: string
+    currency: string
+    unitType: string
+    unitPrice: number
+    quantity: number
+    subtotal: number
+    salesTaxRate?: number
+    salesTaxAmount?: number
+    totalDue: number
+    taxId?: string // Added to match the Invoice model
+    Account: Account
+    Contact: {
+        id: string
+        contactName: string
+        contactEmail?: string | null
+        contactPhone?: string | null
+        BillingAddress: BillingAddressType
+    }
+    Project: {
+        projectTitle: string
+        status: string
+    }
+    items: InvoiceItem[] // Not part of the Prisma model, handled separately
+    notes?: string
+    terms?: string
+}

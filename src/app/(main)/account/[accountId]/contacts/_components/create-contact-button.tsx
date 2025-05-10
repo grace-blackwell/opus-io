@@ -6,9 +6,10 @@ import { useModal } from '@/providers/modal-provider'
 import { PlusCircle } from 'lucide-react'
 import ContactDetails from '@/components/forms/contact-details'
 import CustomModal from "@/components/global/custom-modal";
+import { UserWithAccount } from '@/lib/types'
 
 type Props = {
-    user: any
+    user: UserWithAccount
     className?: string
 }
 
@@ -22,8 +23,8 @@ const CreateContactButton = ({ user, className }: Props) => {
     }
 
     return (
-        <Button 
-            className={className} 
+        <Button
+            className={className}
             onClick={handleCreateContact}
         >
             <PlusCircle className='h-4 w-4 mr-2' />

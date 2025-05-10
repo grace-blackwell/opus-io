@@ -1,49 +1,51 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { TimeEntry } from '@prisma/client'
-import { format } from 'date-fns'
-import { formatDuration } from '@/lib/time-utils'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useEffect, useState } from "react";
+import { TimeEntry } from "@prisma/client";
+import { format } from "date-fns";
+import { formatDuration } from "@/lib/time-utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProjectTimeEntriesProps {
-  projectId: string
+  projectId: string;
 }
 
 interface TimeEntryWithRelations extends TimeEntry {
   Task?: {
-    name: string
-  }
+    name: string;
+  };
   Project?: {
-    projectTitle: string
-  }
+    projectTitle: string;
+  };
 }
 
-export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProps) {
-  const [timeEntries, setTimeEntries] = useState<TimeEntryWithRelations[]>([])
-  const [loading, setLoading] = useState(true)
+export default function ProjectTimeEntries({
+  projectId,
+}: ProjectTimeEntriesProps) {
+  const [timeEntries, setTimeEntries] = useState<TimeEntryWithRelations[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTimeEntries = async () => {
       try {
-        setLoading(true)
-        const response = await fetch(`/api/projects/${projectId}/time-entries`)
-        
+        setLoading(true);
+        const response = await fetch(`/api/projects/${projectId}/time-entries`);
+
         if (!response.ok) {
-          throw new Error('Failed to fetch time entries')
+          throw new Error("Failed to fetch time entries");
         }
-        
-        const data = await response.json()
-        setTimeEntries(data)
+
+        const data = await response.json();
+        setTimeEntries(data);
       } catch (error) {
-        console.error('Error fetching time entries:', error)
+        console.error("Error fetching time entries:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    
-    fetchTimeEntries()
-  }, [projectId])
+    };
+
+    fetchTimeEntries();
+  }, [projectId]);
 
   if (loading) {
     return (
@@ -52,19 +54,15 @@ export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProp
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
       </div>
-    )
+    );
   }
 
   if (timeEntries.length === 0) {
-    return (
-      <div className="text-center py-4">
-        No time entries recorded yet
-      </div>
-    )
+    return <div className="text-center py-4">No time entries recorded yet</div>;
   }
 
   // Only show the 5 most recent entries
-  const recentEntries = timeEntries.slice(0, 5)
+  const recentEntries = timeEntries.slice(0, 5);
 
   return (
     <div className="space-y-3">
@@ -73,7 +71,9 @@ export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProp
           <div className="flex justify-between">
             <div>
               <p className="font-medium text-sm">
-                {entry.Task?.name || entry.Project?.projectTitle || 'Unnamed Entry'}
+                {entry.Task?.name ||
+                  entry.Project?.projectTitle ||
+                  "Unnamed Entry"}
                 {!entry.Task && entry.projectId && (
                   <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
                     Project
@@ -81,18 +81,20 @@ export default function ProjectTimeEntries({ projectId }: ProjectTimeEntriesProp
                 )}
               </p>
               <p className="text-xs">
-                {format(new Date(entry.startTime), 'MMM dd, yyyy • h:mm a')}
+                {format(new Date(entry.startTime), "MMM dd, yyyy • h:mm a")}
               </p>
               {entry.description && (
-                <p className="text-xs mt-1 italic">"{entry.description}"</p>
+                <p className="text-xs mt-1 italic">
+                  &quot;{entry.description}&quot;
+                </p>
               )}
             </div>
             <div className="text-sm font-medium">
-              {entry.duration ? formatDuration(entry.duration) : 'In progress'}
+              {entry.duration ? formatDuration(entry.duration) : "In progress"}
             </div>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }

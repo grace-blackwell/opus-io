@@ -1,8 +1,6 @@
 import React from 'react'
 
-type Props = {}
-
-const BillingPage = (props: Props) => {
+const BillingPage = () => {
 	return (
 		<div>Billing Page</div>
 	)

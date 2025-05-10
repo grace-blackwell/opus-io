@@ -2,23 +2,23 @@
 
 import React, { useEffect, useState } from 'react'
 import { PDFViewer } from '@react-pdf/renderer'
-import ThemedEditorStylePdf from './themed-editor-style-pdf'
+import ThemedEditorStylePdf, { InvoiceData } from './themed-editor-style-pdf'
 import { useColorTheme } from '@/providers/color-theme-provider'
 
 type Props = {
-    invoiceData: any
+    invoiceData: InvoiceData
 }
 
 const InvoicePreview = ({ invoiceData }: Props) => {
     const { colorTheme } = useColorTheme();
     const [mounted, setMounted] = useState(false);
     const [key, setKey] = useState(0); // Add a key to force re-render
-    
+
     // Only execute client-side
     useEffect(() => {
         setMounted(true);
     }, []);
-    
+
     // Force re-render when invoiceData changes
     useEffect(() => {
         if (invoiceData) {
@@ -26,20 +26,20 @@ const InvoicePreview = ({ invoiceData }: Props) => {
             console.log('Invoice data changed, forcing re-render');
         }
     }, [invoiceData]);
-    
+
     // Don't render anything until mounted (to avoid hydration mismatch)
     if (!mounted || !invoiceData) return null;
-    
+
     // Map FlyonUI themes to theme-colors.ts compatibility
     let mappedTheme = 'default';
-    
+
     // Map FlyonUI themes to our existing theme colors
     switch(colorTheme) {
-        case 'light':
-            mappedTheme = 'default'; // Use our default (purple) theme
+        case 'opus':
+            mappedTheme = 'default';
             break;
-        case 'dark':
-            mappedTheme = 'default'; // Use our default theme in dark mode
+        case 'opusdark':
+            mappedTheme = 'default';
             break;
         case 'corporate':
         case 'mintlify':
@@ -52,24 +52,35 @@ const InvoicePreview = ({ invoiceData }: Props) => {
             mappedTheme = 'red';
             break;
         case 'luxury':
+        case 'forest':
             mappedTheme = 'green';
             break;
         case 'slack':
+        case 'valentine':
             mappedTheme = 'pink';
             break;
         case 'soft':
+        case 'caramellatte':
             mappedTheme = 'orange';
+            break;
+        case 'ocean':
+            mappedTheme = 'blue';
+            break;
+        case 'synthwave':
+        case 'black':
+        case 'coffee':
+            mappedTheme = 'default'; // Dark themes use default
             break;
         default:
             mappedTheme = 'default';
     }
-    
+
     // Use the current theme from the color theme provider
     const themedInvoiceData = {
         ...invoiceData,
         theme: mappedTheme
     };
-    
+
     console.log('Final invoice data with color theme:', themedInvoiceData);
 
     return (

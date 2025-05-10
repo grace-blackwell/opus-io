@@ -22,14 +22,11 @@ export async function GET(
         Project: true,
         Contact: true,
         Tags: true,
-      }
+      },
     });
 
     if (!task) {
-      return NextResponse.json(
-        { error: "Task not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
     return NextResponse.json(task);

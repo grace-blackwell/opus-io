@@ -24,7 +24,7 @@ export async function POST(
     } else if (action === "stop") {
       // First stop the time tracking
       const task = await stopTaskTimeTracking(taskId);
-      
+
       // If a description was provided, update the most recent time entry
       if (description) {
         // First find the most recent time entry
@@ -32,28 +32,28 @@ export async function POST(
           where: {
             taskId,
             endTime: {
-              not: null
-            }
+              not: null,
+            },
           },
           orderBy: {
-            endTime: 'desc'
+            endTime: "desc",
           },
-          take: 1
+          take: 1,
         });
-        
+
         // If we found an entry, update it
         if (recentEntries.length > 0) {
           await db.timeEntry.update({
             where: {
-              id: recentEntries[0].id
+              id: recentEntries[0].id,
             },
             data: {
-              description
-            }
+              description,
+            },
           });
         }
       }
-      
+
       return NextResponse.json(task);
     } else {
       return NextResponse.json(

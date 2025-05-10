@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from 'react'
-import { Contact, ContactTag } from '@prisma/client'
+import React, { useState, useMemo } from 'react'
+import { Contact, ContactTag} from '@prisma/client'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { UserWithAccount } from '@/lib/types'
 
 type ContactWithTags = Contact & {
   ContactTags: ContactTag[]
@@ -32,14 +33,13 @@ type ContactWithTags = Contact & {
 type ContactsViewProps = {
   contacts: ContactWithTags[]
   accountId: string
-  user: any
+  user: UserWithAccount
 }
 
 const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
-  const [activeTab, setActiveTab] = useState('list')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  
+
   // Extract all unique tags from contacts
   const allTags = useMemo(() => {
     // Use a Map with tag.id as the key to ensure uniqueness
@@ -54,35 +54,35 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
     })
     return Array.from(tagsMap.values())
   }, [contacts])
-  
+
   // Filter contacts based on search query and selected tags
   const filteredContacts = useMemo(() => {
     return contacts.filter(contact => {
       // Filter by search query
-      const matchesSearch = 
-        searchQuery === '' || 
+      const matchesSearch =
+        searchQuery === '' ||
         contact.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (contact.contactEmail && contact.contactEmail.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (contact.contactPhone && contact.contactPhone.toLowerCase().includes(searchQuery.toLowerCase()))
-      
+
       // Filter by selected tags
-      const matchesTags = 
-        selectedTags.length === 0 || 
+      const matchesTags =
+        selectedTags.length === 0 ||
         contact.ContactTags.some(tag => selectedTags.includes(tag.id))
-      
+
       return matchesSearch && matchesTags
     })
   }, [contacts, searchQuery, selectedTags])
-  
+
   // Handle tag selection
   const toggleTag = (tagId: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagId) 
-        ? prev.filter(id => id !== tagId) 
+    setSelectedTags(prev =>
+      prev.includes(tagId)
+        ? prev.filter(id => id !== tagId)
         : [...prev, tagId]
     )
   }
-  
+
   // Clear all filters
   const clearFilters = () => {
     setSearchQuery('')
@@ -91,13 +91,13 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
 
   return (
     <AlertDialog>
-      <Tabs defaultValue="list" className="w-full" onValueChange={setActiveTab}>
+      <Tabs defaultValue="list" className="w-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
           <TabsList className={'bg-base-100 rounded-none'}>
             <TabsTrigger value="list"> <List className={'text-primary cursor-pointer'}/> List View</TabsTrigger>
             <TabsTrigger value="card"> <SquareUserRound className={'text-primary'}/> Card View</TabsTrigger>
           </TabsList>
-          
+
           <div className="flex items-center gap-2">
             {/* Filter by tags */}
             <Popover>
@@ -120,11 +120,11 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                         const isCustomColor = tag.color.startsWith('CUSTOM:');
                         const colorHex = isCustomColor ? tag.color.split(':')[1] : undefined;
                         const colorName = isCustomColor ? 'CUSTOM' : tag.color;
-                        
+
                         return (
                           <div key={tag.id} className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`tag-${tag.id}`} 
+                            <Checkbox
+                              id={`tag-${tag.id}`}
                               checked={selectedTags.includes(tag.id)}
                               onCheckedChange={() => toggleTag(tag.id)}
                             />
@@ -142,11 +142,11 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                       <p className="text-sm text-neutral-content">No tags</p>
                     )}
                   </div>
-                  
+
                   {selectedTags.length > 0 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="flex items-center gap-1"
                       onClick={() => setSelectedTags([])}
                     >
@@ -159,9 +159,9 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
             </Popover>
 
             {(searchQuery || selectedTags.length > 0) && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="flex items-center gap-1"
                 onClick={clearFilters}
               >
@@ -171,11 +171,11 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
             )}
           </div>
         </div>
-        
+
         <TabsContent value="list" className="w-full">
           <Command className='bg-transparent w-full shadow-sm'>
             <CommandInput
-              placeholder='Search Contacts...' 
+              placeholder='Search Contacts...'
               value={searchQuery}
               onValueChange={setSearchQuery}
             />
@@ -189,18 +189,18 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                         <div className='flex flex-col justify-between w-full'>
                           <div className='flex flex-col'>
                             <div className="flex justify-between items-center">
-                              <span className="font-bold text-base-content text-base-content group-hover:text-primary-content">{contact.contactName}</span>
+                              <span className="font-bold text-base-content group-hover:text-primary-content">{contact.contactName}</span>
                               <div className="flex gap-1">
                                 {contact.ContactTags.map(tag => {
                                   const isCustomColor = tag.color.startsWith('CUSTOM:');
                                   const colorHex = isCustomColor ? tag.color.split(':')[1] : undefined;
                                   const colorName = isCustomColor ? 'CUSTOM' : tag.color;
-                                  
+
                                   return (
                                     <ContactTagDisplay
                                       key={tag.id}
                                       title={tag.name}
-                                      colorName={colorName} 
+                                      colorName={colorName}
                                       colorHex={colorHex}
                                     />
                                   );
@@ -219,8 +219,8 @@ const ContactsView = ({ contacts, accountId, user }: ContactsViewProps) => {
                         </div>
                       </Link>
                       <div className="flex gap-2">
-                        <EditContactButton 
-                          user={user} 
+                        <EditContactButton
+                          user={user}
                           contactId={contact.id}
                         />
                         <AlertDialogTrigger asChild>

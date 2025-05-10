@@ -3,9 +3,9 @@
 import {currentUser} from "@clerk/nextjs/server";
 import {redirect} from "next/navigation";
 import {db} from "@/lib/db";
-import {$Enums, Account, BillingAddress, Contact, Lane, Prisma, Tag, Task, User} from "@prisma/client";
-import Plan = $Enums.Plan;
-import {CreateFunnelFormSchema, CreateMediaType} from "@/lib/types";
+import {$Enums, Account, BillingAddress, Contact, ContactTag, Lane, Prisma, Tag, Task, User, Project, Invoice} from "@prisma/client";
+import Status = $Enums.Status;
+import {CreateFunnelFormSchema, CreateMediaType, InvoiceDataType, InvoicesWithAccountContactContractProject} from "@/lib/types";
 import {nanoid} from "nanoid";
 import {z} from "zod";
 
@@ -173,7 +173,7 @@ export const updateOrCreateUser = async () => {
     })
 }
 
-export const createOrUpdateContact = async (contact: Contact, account: Account, billingAddress: Partial<BillingAddress>, contactTags: any[] = []) => {
+export const createOrUpdateContact = async (contact: Contact, account: Account, billingAddress: Partial<BillingAddress>, contactTags: ContactTag[] = []) => {
 
     try {
         let existingBillingAddressByContactId;
@@ -244,7 +244,7 @@ export const createOrUpdateContact = async (contact: Contact, account: Account, 
                     set: contactTags.map(tag => ({ id: tag.id }))
                 }
             };
-            
+
             console.log('Updating contact with tags:', contactTags.map(tag => ({ id: tag.id })));
 
             return await db.contact.update({
@@ -281,7 +281,7 @@ export const createOrUpdateContact = async (contact: Contact, account: Account, 
                 connect: contactTags.map(tag => ({ id: tag.id }))
             }
         };
-        
+
         console.log('Creating contact with tags:', contactTags.map(tag => ({ id: tag.id })));
 
         const result = await db.contact.create({
@@ -332,7 +332,7 @@ export const deleteContact = async (contactId: string) => {
     }
 }
 
-export const createOrUpdateAccount = async (account: Account, price?: Plan) => {
+export const createOrUpdateAccount = async (account: Account) => {
 
     console.log('createOrUpdateAccount called with:', {
         id: account.id,
@@ -587,7 +587,7 @@ export const getProject = async (projectId: string) => {
     } catch (e){console.log(e)}
 }
 
-export const createOrUpdateProject = async (project: Partial<any>, accountId: string) => {
+export const createOrUpdateProject = async (project: Partial<Project>, accountId: string) => {
     try {
         console.log('createOrUpdateProject called with:', {
             id: project.id,
@@ -617,10 +617,10 @@ export const createOrUpdateProject = async (project: Partial<any>, accountId: st
                 description: project.description,
                 projectId: project.projectId,
                 contactId: project.contactId,
-                estimatedHours: project.estimatedHours ? parseFloat(project.estimatedHours) : null,
-                actualHours: project.actualHours ? parseFloat(project.actualHours) : null,
-                estimatedCost: project.estimatedCost ? parseFloat(project.estimatedCost) : null,
-                actualCost: project.actualCost ? parseFloat(project.actualCost) : null,
+                estimatedHours: project.estimatedHours ? (typeof project.estimatedHours === 'string' ? parseFloat(project.estimatedHours) : project.estimatedHours) : null,
+                actualHours: project.actualHours ? (typeof project.actualHours === 'string' ? parseFloat(project.actualHours) : project.actualHours) : null,
+                estimatedCost: project.estimatedCost ? (typeof project.estimatedCost === 'string' ? parseFloat(project.estimatedCost) : project.estimatedCost) : null,
+                actualCost: project.actualCost ? (typeof project.actualCost === 'string' ? parseFloat(project.actualCost) : project.actualCost) : null,
                 status: project.status || 'NotStarted',
                 updatedAt: new Date(),
             };
@@ -648,10 +648,10 @@ export const createOrUpdateProject = async (project: Partial<any>, accountId: st
             projectId: project.projectId || '',
             contactId: project.contactId || null,
             accountId: accountId,
-            estimatedHours: project.estimatedHours ? parseFloat(project.estimatedHours) : null,
-            actualHours: project.actualHours ? parseFloat(project.actualHours) : null,
-            estimatedCost: project.estimatedCost ? parseFloat(project.estimatedCost) : null,
-            actualCost: project.actualCost ? parseFloat(project.actualCost) : null,
+            estimatedHours: project.estimatedHours ? (typeof project.estimatedHours === 'string' ? parseFloat(project.estimatedHours) : project.estimatedHours) : null,
+            actualHours: project.actualHours ? (typeof project.actualHours === 'string' ? parseFloat(project.actualHours) : project.actualHours) : null,
+            estimatedCost: project.estimatedCost ? (typeof project.estimatedCost === 'string' ? parseFloat(project.estimatedCost) : project.estimatedCost) : null,
+            actualCost: project.actualCost ? (typeof project.actualCost === 'string' ? parseFloat(project.actualCost) : project.actualCost) : null,
             status: project.status || 'NotStarted',
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -707,7 +707,7 @@ export const getNextInvoiceNumber = async () => {
     }
 }
 
-export const createOrUpdateInvoice = async (invoice: Partial<any>, accountId: string) => {
+export const createOrUpdateInvoice = async (invoice: Partial<Invoice>, accountId: string) => {
     try {
         console.log('createOrUpdateInvoice called with:', {
             id: invoice.id,
@@ -733,18 +733,18 @@ export const createOrUpdateInvoice = async (invoice: Partial<any>, accountId: st
             console.log('Updating existing invoice with ID:', existingInvoiceById.id);
 
             const updateData = {
-                invoiceDate: new Date(invoice.invoiceDate),
-                dueDate: new Date(invoice.dueDate),
+                invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate) : new Date(),
+                dueDate: invoice.dueDate ? new Date(invoice.dueDate) : new Date(),
                 paymentStatus: invoice.paymentStatus,
                 currency: invoice.currency,
                 unitType: invoice.unitType,
-                unitPrice: parseFloat(invoice.unitPrice),
-                quantity: parseInt(invoice.quantity),
-                subtotal: parseFloat(invoice.subtotal),
-                salesTaxRate: invoice.salesTaxRate ? parseFloat(invoice.salesTaxRate) : null,
-                salesTaxAmount: invoice.salesTaxAmount ? parseFloat(invoice.salesTaxAmount) : null,
-                totalDue: parseFloat(invoice.totalDue),
-                taxId: invoice.taxId || null,
+                unitPrice: invoice.unitPrice !== undefined ? parseFloat(invoice.unitPrice.toString()) : 0,
+                quantity: invoice.quantity !== undefined ? parseInt(invoice.quantity.toString()) : 0,
+                subtotal: invoice.subtotal !== undefined ? parseFloat(invoice.subtotal.toString()) : 0,
+                salesTaxRate: invoice.salesTaxRate ? parseFloat(invoice.salesTaxRate.toString()) : null,
+                salesTaxAmount: invoice.salesTaxAmount ? parseFloat(invoice.salesTaxAmount.toString()) : null,
+                totalDue: invoice.totalDue !== undefined ? parseFloat(invoice.totalDue.toString()) : 0,
+                taxId: invoice.taxId,
                 contactId: invoice.contactId,
                 projectId: invoice.projectId,
                 updatedAt: new Date(),
@@ -769,23 +769,34 @@ export const createOrUpdateInvoice = async (invoice: Partial<any>, accountId: st
         // Get the next invoice number
         const nextInvoiceNumber = await getNextInvoiceNumber();
 
+        // Check if required fields are present
+        if (!invoice.projectId) {
+            console.error('Error creating invoice: projectId is required');
+            return null;
+        }
+
+        if (!invoice.contactId) {
+            console.error('Error creating invoice: contactId is required');
+            return null;
+        }
+
         const invoiceData = {
             id: invoice.id,
             invoiceNumber: BigInt(nextInvoiceNumber),
-            invoiceDate: new Date(invoice.invoiceDate),
-            dueDate: new Date(invoice.dueDate),
+            invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate) : new Date(),
+            dueDate: invoice.dueDate ? new Date(invoice.dueDate) : new Date(),
             paymentStatus: invoice.paymentStatus || 'Unpaid',
             currency: invoice.currency || 'USD',
             unitType: invoice.unitType || 'Hourly',
-            unitPrice: parseFloat(invoice.unitPrice),
-            quantity: parseInt(invoice.quantity),
-            subtotal: parseFloat(invoice.subtotal),
-            salesTaxRate: invoice.salesTaxRate ? parseFloat(invoice.salesTaxRate) : null,
-            salesTaxAmount: invoice.salesTaxAmount ? parseFloat(invoice.salesTaxAmount) : null,
-            totalDue: parseFloat(invoice.totalDue),
+            unitPrice: invoice.unitPrice !== undefined ? parseFloat(invoice.unitPrice.toString()) : 0,
+            quantity: invoice.quantity !== undefined ? parseInt(invoice.quantity.toString()) : 0,
+            subtotal: invoice.subtotal !== undefined ? parseFloat(invoice.subtotal.toString()) : 0,
+            salesTaxRate: invoice.salesTaxRate ? parseFloat(invoice.salesTaxRate.toString()) : null,
+            salesTaxAmount: invoice.salesTaxAmount ? parseFloat(invoice.salesTaxAmount.toString()) : null,
+            totalDue: invoice.totalDue !== undefined ? parseFloat(invoice.totalDue.toString()) : 0,
             taxId: invoice.taxId || null,
             contactId: invoice.contactId,
-            projectId: invoice.projectId,
+            projectId: invoice.projectId, // Now guaranteed to be defined
             accountId: accountId,
             contractId: "placeholder", // Temporary placeholder, will be updated later
             createdAt: new Date(),
@@ -826,6 +837,79 @@ export const getInvoice = async (invoiceId: string) => {
         return null;
     }
 }
+
+export const convertToInvoiceWithRelations = async (data: InvoiceDataType, accountId: string): Promise<InvoicesWithAccountContactContractProject> => {
+    return {
+        // Don't spread data directly to avoid type conflicts
+        id: data.id,
+        invoiceNumber: BigInt(data.invoiceNumber), // Convert number to BigInt
+        invoiceDate: data.invoiceDate,
+        dueDate: data.dueDate,
+        paymentStatus: data.paymentStatus,
+        currency: data.currency,
+        unitType: data.unitType,
+        unitPrice: data.unitPrice,
+        quantity: data.quantity,
+        subtotal: data.subtotal,
+        salesTaxRate: data.salesTaxRate ?? null,
+        salesTaxAmount: data.salesTaxAmount ?? null,
+        totalDue: data.totalDue,
+        taxId: data.taxId ?? null, // Use the taxId from data if provided, otherwise null
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        accountId: accountId,
+        contactId: data.Contact.id,
+        projectId: '',  // This would normally come from the database
+        contractId: '',  // This would normally come from the database
+        // Include the Account property from the data
+        Account: data.Account,
+        // Format Contact to match the expected structure
+        Contact: {
+            id: data.Contact.id,
+            contactName: data.Contact.contactName,
+            contactEmail: data.Contact.contactEmail || null,
+            contactPhone: data.Contact.contactPhone || null,
+            accountId: accountId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            contactWebsite: null,
+            // Format BillingAddress to match the expected structure
+            BillingAddress: data.Contact.BillingAddress ? {
+                contactId: data.Contact.id,
+                id: nanoid(),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                city: data.Contact.BillingAddress.city,
+                state: data.Contact.BillingAddress.state,
+                zipCode: data.Contact.BillingAddress.zipCode,
+                country: data.Contact.BillingAddress.country,
+                street: data.Contact.BillingAddress.street,
+            } : null
+        },
+        // Add Project field to match the expected structure
+        Project: {
+            id: '',  // This would normally come from the database
+            projectTitle: data.Project.projectTitle,
+            accountId: accountId,
+            contactId: data.Contact.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            description: '',
+            projectId: null,
+            estimatedHours: null,
+            actualHours: null,
+            estimatedCost: null,
+            actualCost: null,
+            contractId: null,
+            isTracking: false,
+            trackedStartTime: null,
+            totalTrackedTime: 0,
+            status: (data.Project.status && ['NotStarted', 'InProgress', 'Completed'].includes(data.Project.status))
+                ? data.Project.status as Status
+                : 'NotStarted' as Status
+        },
+    };
+};
 
 export const deleteInvoice = async (invoiceId: string) => {
     try {
@@ -1139,33 +1223,33 @@ export const upsertFunnel = async (
 // Time tracking functions
 export const startTaskTimeTracking = async (taskId: string) => {
     const now = new Date();
-    
+
     // Get task details including project info
     const task = await db.task.findUnique({
         where: { id: taskId },
-        select: { 
+        select: {
             projectId: true,
-            Project: { 
-                select: { 
+            Project: {
+                select: {
                     id: true,
                     accountId: true,
                     isTracking: true
-                } 
-            } 
+                }
+            }
         }
     });
-    
+
     if (!task) {
         throw new Error('Task not found');
     }
-    
+
     const accountId = task.Project?.accountId || '';
-    
+
     // If the project is currently being tracked, stop the project timer first
     if (task.projectId && task.Project?.isTracking) {
         await stopProjectTimeTracking(task.projectId);
     }
-    
+
     // Create a new time entry
     await db.timeEntry.create({
         data: {
@@ -1174,7 +1258,7 @@ export const startTaskTimeTracking = async (taskId: string) => {
             accountId: accountId,
         }
     });
-    
+
     // Update the task's tracking status
     return db.task.update({
         where: { id: taskId },
@@ -1199,15 +1283,15 @@ export const stopTaskTimeTracking = async (taskId: string) => {
             projectId: true,
         }
     });
-    
+
     if (!task || !task.trackedStartTime) {
         throw new Error('Task is not currently being tracked');
     }
-    
+
     const now = new Date();
     const elapsedSeconds = Math.floor((now.getTime() - task.trackedStartTime.getTime()) / 1000);
     const newTotalTime = task.totalTrackedTime + elapsedSeconds;
-    
+
     // Update the latest time entry
     await db.timeEntry.updateMany({
         where: {
@@ -1219,14 +1303,14 @@ export const stopTaskTimeTracking = async (taskId: string) => {
             duration: elapsedSeconds,
         }
     });
-    
+
     // If the task belongs to a project, update the project's total time as well
     if (task.projectId) {
         const project = await db.project.findUnique({
             where: { id: task.projectId },
             select: { totalTrackedTime: true }
         });
-        
+
         if (project) {
             await db.project.update({
                 where: { id: task.projectId },
@@ -1236,7 +1320,7 @@ export const stopTaskTimeTracking = async (taskId: string) => {
             });
         }
     }
-    
+
     // Update the task's tracking status and total time
     return db.task.update({
         where: { id: taskId },
@@ -1255,11 +1339,11 @@ export const stopTaskTimeTracking = async (taskId: string) => {
 
 export const startProjectTimeTracking = async (projectId: string) => {
     const now = new Date();
-    
+
     // Get the project with its tasks
     const project = await db.project.findUnique({
         where: { id: projectId },
-        select: { 
+        select: {
             accountId: true,
             Tasks: {
                 select: {
@@ -1269,18 +1353,18 @@ export const startProjectTimeTracking = async (projectId: string) => {
             }
         }
     });
-    
+
     if (!project) {
         throw new Error('Project not found');
     }
-    
+
     // Stop any running task timers to prevent double-counting
     for (const task of project.Tasks) {
         if (task.isTracking) {
             await stopTaskTimeTracking(task.id);
         }
     }
-    
+
     try {
         // Create a new time entry for the project
         await db.timeEntry.create({
@@ -1291,7 +1375,7 @@ export const startProjectTimeTracking = async (projectId: string) => {
                 description: 'Project-level time tracking'
             }
         });
-        
+
         // Update the project's tracking status
         return db.project.update({
             where: { id: projectId },
@@ -1318,15 +1402,15 @@ export const stopProjectTimeTracking = async (projectId: string) => {
                 totalTrackedTime: true,
             }
         });
-        
+
         if (!project || !project.trackedStartTime) {
             throw new Error('Project is not currently being tracked');
         }
-        
+
         const now = new Date();
         const elapsedSeconds = Math.floor((now.getTime() - project.trackedStartTime.getTime()) / 1000);
         const newTotalTime = project.totalTrackedTime + elapsedSeconds;
-        
+
         // Update the latest time entry for this project
         await db.timeEntry.updateMany({
             where: {
@@ -1338,19 +1422,19 @@ export const stopProjectTimeTracking = async (projectId: string) => {
                 duration: elapsedSeconds,
             }
         });
-        
+
         // Get all tasks for this project
         const tasks = await db.task.findMany({
             where: { projectId },
             select: { id: true, trackedStartTime: true, totalTrackedTime: true }
         });
-        
+
         // Stop time entries for all tasks
         for (const task of tasks) {
             if (task.trackedStartTime) {
                 const taskElapsedSeconds = Math.floor((now.getTime() - task.trackedStartTime.getTime()) / 1000);
                 const taskNewTotalTime = task.totalTrackedTime + taskElapsedSeconds;
-                
+
                 // Update the latest time entry for this task
                 await db.timeEntry.updateMany({
                     where: {
@@ -1362,7 +1446,7 @@ export const stopProjectTimeTracking = async (projectId: string) => {
                         duration: taskElapsedSeconds,
                     }
                 });
-                
+
                 // Update the task's tracking status and total time
                 await db.task.update({
                     where: { id: task.id },
@@ -1374,7 +1458,7 @@ export const stopProjectTimeTracking = async (projectId: string) => {
                 });
             }
         }
-        
+
         // Update the project's tracking status and total time
         return db.project.update({
             where: { id: projectId },
@@ -1405,9 +1489,9 @@ export const getTimeEntriesForProject = async (projectId: string) => {
         where: { projectId },
         select: { id: true, name: true }
     });
-    
+
     const taskIds = tasks.map(task => task.id);
-    
+
     // Get all time entries for the project and its tasks
     const timeEntries = await db.timeEntry.findMany({
         where: {
@@ -1432,7 +1516,7 @@ export const getTimeEntriesForProject = async (projectId: string) => {
             }
         }
     });
-    
+
     return timeEntries;
 }
 
@@ -1488,7 +1572,7 @@ export const getContactTagsForAccount = async (accountId: string) => {
     });
 }
 
-export const upsertContactTag = async (accountId: string, tag: any) => {
+export const upsertContactTag = async (accountId: string, tag: Tag) => {
     return db.contactTag.upsert({
         where: {
             id: tag.id

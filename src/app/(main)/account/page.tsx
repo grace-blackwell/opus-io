@@ -1,7 +1,7 @@
 import React from 'react'
 import {currentUser} from "@clerk/nextjs/server";
 import {redirect} from "next/navigation";
-import {getAuthUserDetails, verifyAndAcceptAccount} from "@/lib/queries";
+import {verifyAndAcceptAccount} from "@/lib/queries";
 import AccountDetails from "@/components/forms/account-details";
 
 const Page = async ({ searchParams }: {searchParams: {plan: string; state: string; code: string}}) => {
@@ -9,10 +9,9 @@ const Page = async ({ searchParams }: {searchParams: {plan: string; state: strin
 	const accountId = await verifyAndAcceptAccount()
 	console.log(accountId)
 
-	const user = await getAuthUserDetails()
 	// Await searchParams to satisfy Next.js requirements
 	const params = await Promise.resolve(searchParams)
-	
+
 	if (accountId) {
 		if (params.plan) {
 			return redirect(`/account/${accountId}/billing?plan=${params.plan}`)
@@ -68,7 +67,7 @@ const Page = async ({ searchParams }: {searchParams: {plan: string; state: strin
 				<div className="w-full md:w-3/5 flex items-center justify-center p-4 md:p-8">
 					<div className="w-full max-w-[900px] p-4 md:p-8 rounded-xl bg-background/80 backdrop-blur-sm">
 						<h1 className="text-3xl md:text-4xl font-bold">
-							Let's create your
+							Let&apos;s create your
 							<span className="bg-gradient-to-l from-orange-500 to-purple-600 text-transparent bg-clip-text drop-shadow-lg"> Opus </span>
 							Account
 						</h1>

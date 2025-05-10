@@ -1,17 +1,18 @@
 import React from 'react'
 import { Document, Page, StyleSheet, View, Text } from "@react-pdf/renderer"
 import { format } from 'date-fns'
-
-type InvoiceItem = {
-    id: string
-    description: string
-    quantity: string
-    unitPrice: string
-    amount: string
-}
+import { Invoice, Account, Contact, BillingAddress, Project } from "@prisma/client"
+import { InvoiceItem } from "@/lib/types"
 
 type Props = {
-    invoice: any // Using any for simplicity, but should be properly typed in a real app
+    invoice: Invoice & {
+        items?: InvoiceItem[]
+        Account?: Account | null
+        Contact?: Contact & {
+            BillingAddress?: BillingAddress | null
+        } | null
+        Project?: Project | null
+    }
 }
 
 const styles = StyleSheet.create({
@@ -230,18 +231,18 @@ const styles = StyleSheet.create({
 
 const InvoicePdf = ({ invoice }: Props) => {
     if (!invoice) return null;
-    
+
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: invoice.currency || 'USD'
         }).format(amount);
     };
-    
+
     const formatDate = (date: Date) => {
         return format(new Date(date), 'MMM dd, yyyy');
     };
-    
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -267,12 +268,12 @@ const InvoicePdf = ({ invoice }: Props) => {
                         )}
                     </View>
                 </View>
-                
+
                 {/* Client and Billing Information */}
                 <View style={styles.addressSection}>
                     <View style={styles.addressBox}>
                         <Text style={styles.addressTitle}>BILL TO:</Text>
-                        <Text style={styles.textBold}>{invoice.Contact?.contactName || invoice.Contact?.clientName}</Text>
+                        <Text style={styles.textBold}>{invoice.Contact?.contactName || invoice.Contact?.contactName}</Text>
                         {invoice.Contact?.BillingAddress ? (
                             <>
                                 <Text style={styles.text}>{invoice.Contact.BillingAddress.street}</Text>
@@ -283,19 +284,19 @@ const InvoicePdf = ({ invoice }: Props) => {
                             </>
                         ) : (
                             <>
-                                {invoice.Contact?.contactAddress && <Text style={styles.text}>{invoice.Contact.contactAddress}</Text>}
-                                {(invoice.Contact?.contactCity || invoice.Contact?.contactState || invoice.Contact?.contactZip) && (
+                                {invoice.Contact?.BillingAddress?.street && <Text style={styles.text}>{invoice.Contact?.BillingAddress?.street}</Text>}
+                                {(invoice.Contact?.BillingAddress?.city || invoice.Contact?.BillingAddress?.state || invoice.Contact?.BillingAddress?.zipCode) && (
                                     <Text style={styles.text}>
-                                        {invoice.Contact.contactCity}{invoice.Contact.contactCity && invoice.Contact.contactState ? ', ' : ''}{invoice.Contact.contactState} {invoice.Contact.contactZip}
+                                        {invoice.Contact?.BillingAddress?.city }{invoice.Contact?.BillingAddress?.city  && invoice.Contact?.BillingAddress?.state  ? ', ' : ''}{invoice.Contact?.BillingAddress?.state } {invoice.Contact?.BillingAddress?.zipCode }
                                     </Text>
                                 )}
-                                {invoice.Contact?.contactCountry && <Text style={styles.text}>{invoice.Contact.contactCountry}</Text>}
+                                {invoice.Contact?.BillingAddress?.country && <Text style={styles.text}>{invoice.Contact?.BillingAddress?.country}</Text>}
                             </>
                         )}
-                        <Text style={styles.text}>{invoice.Contact?.contactEmail || invoice.Contact?.clientEmail}</Text>
-                        <Text style={styles.text}>{invoice.Contact?.contactPhone || invoice.Contact?.clientPhone}</Text>
+                        <Text style={styles.text}>{invoice.Contact?.contactEmail || invoice.Contact?.contactEmail}</Text>
+                        <Text style={styles.text}>{invoice.Contact?.contactPhone || invoice.Contact?.contactPhone}</Text>
                     </View>
-                    
+
                     <View style={styles.addressBox}>
                         <Text style={styles.addressTitle}>PROJECT:</Text>
                         <Text style={styles.textBold}>{invoice.Project?.projectTitle || 'Custom Invoice'}</Text>
@@ -303,7 +304,7 @@ const InvoicePdf = ({ invoice }: Props) => {
                         {invoice.Project?.status && <Text style={styles.text}>Status: {invoice.Project.status}</Text>}
                     </View>
                 </View>
-                
+
                 {/* Invoice Items */}
                 <View style={styles.section}>
                     <View style={styles.tableHeader}>
@@ -312,7 +313,7 @@ const InvoicePdf = ({ invoice }: Props) => {
                         <Text style={[styles.tableCol3, styles.tableHeaderText]}>Unit Price</Text>
                         <Text style={[styles.tableCol4, styles.tableHeaderText]}>Amount</Text>
                     </View>
-                    
+
                     {invoice.items ? (
                         // Render multiple items if available
                         invoice.items.map((item: InvoiceItem) => (
@@ -335,47 +336,31 @@ const InvoicePdf = ({ invoice }: Props) => {
                         </View>
                     )}
                 </View>
-                
+
                 {/* Totals Section */}
                 <View style={styles.totalSection}>
                     <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Subtotal:</Text>
                         <Text style={styles.totalValue}>{formatCurrency(invoice.subtotal)}</Text>
                     </View>
-                    
+
                     {invoice.salesTaxRate && invoice.salesTaxAmount && (
                         <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Tax ({parseFloat(invoice.salesTaxRate).toFixed(2)}%):</Text>
-                            <Text style={styles.totalValue}>{formatCurrency(parseFloat(invoice.salesTaxAmount))}</Text>
+                            <Text style={styles.totalLabel}>Tax ({invoice.salesTaxRate.toFixed(2)}%):</Text>
+                            <Text style={styles.totalValue}>{formatCurrency(invoice.salesTaxAmount)}</Text>
                         </View>
                     )}
-                    
+
                     <View style={styles.totalDueRow}>
                         <Text style={styles.totalDueLabel}>Total Due:</Text>
                         <Text style={styles.totalDueValue}>{formatCurrency(invoice.totalDue)}</Text>
                     </View>
                 </View>
-                
-                {/* Notes Section */}
-                {invoice.notes && (
-                    <View style={styles.notesSection}>
-                        <Text style={styles.notesTitle}>Notes:</Text>
-                        <Text style={styles.notesText}>{invoice.notes}</Text>
-                    </View>
-                )}
-                
-                {/* Terms Section */}
-                {invoice.terms && (
-                    <View style={styles.notesSection}>
-                        <Text style={styles.notesTitle}>Terms & Conditions:</Text>
-                        <Text style={styles.notesText}>{invoice.terms}</Text>
-                    </View>
-                )}
-                
+
                 {/* Footer */}
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        Thank you for your business! If you have any questions about this invoice, 
+                        Thank you for your business! If you have any questions about this invoice,
                         please contact {invoice.Account?.accountEmail || 'us'}.
                     </Text>
                     <Text style={styles.footerText}>

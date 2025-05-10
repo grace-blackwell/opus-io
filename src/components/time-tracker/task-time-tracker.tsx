@@ -1,57 +1,65 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Play, Square, Clock, MessageSquare, AlertCircle } from 'lucide-react'
-import { formatTime, getElapsedSeconds } from '@/lib/time-utils'
-import { Task } from '@prisma/client'
-import { toast } from 'sonner'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Play, Square, Clock, MessageSquare, AlertCircle } from "lucide-react";
+import { formatTime, getElapsedSeconds } from "@/lib/time-utils";
+import { TaskWithTags } from "@/lib/types";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogFooter,
-  DialogDescription
-} from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TaskTimeTrackerProps {
-  task: Task
-  onTimeUpdate?: (task: Task) => void
+  task: TaskWithTags;
+  onTimeUpdate?: (task: TaskWithTags) => void;
 }
 
-export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerProps) {
-  const [isTracking, setIsTracking] = useState(task.isTracking)
-  const [elapsedTime, setElapsedTime] = useState(task.totalTrackedTime || 0)
-  const [loading, setLoading] = useState(false)
-  const [showStopDialog, setShowStopDialog] = useState(false)
-  const [description, setDescription] = useState('')
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const isTrackingRef = useRef(task.isTracking)
-  const taskRef = useRef(task)
+export default function TaskTimeTracker({
+  task,
+  onTimeUpdate,
+}: TaskTimeTrackerProps) {
+  const [isTracking, setIsTracking] = useState(task.isTracking);
+  const [elapsedTime, setElapsedTime] = useState(task.totalTrackedTime || 0);
+  const [loading, setLoading] = useState(false);
+  const [showStopDialog, setShowStopDialog] = useState(false);
+  const [description, setDescription] = useState("");
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isTrackingRef = useRef(task.isTracking);
+  const taskRef = useRef(task);
 
   useEffect(() => {
-    isTrackingRef.current = isTracking
-  }, [isTracking])
-  
-  useEffect(() => {
-    taskRef.current = task
-  }, [task])
+    isTrackingRef.current = isTracking;
+  }, [isTracking]);
 
-  const refreshTaskState = async () => {
+  useEffect(() => {
+    taskRef.current = task;
+  }, [task]);
+
+  const refreshTaskState = useCallback(async () => {
     try {
       if (loading) return;
-      
-      const response = await fetch(`/api/tasks/${task.id}`, {
-        method: 'GET',
+
+      const response = await fetch(`/api/tasks/${taskRef.current.id}`, {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        cache: 'no-store',
+        cache: "no-store",
       });
 
       if (response.ok) {
@@ -66,10 +74,14 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
             setElapsedTime(updatedTask.totalTrackedTime || 0);
           } else {
             try {
-              const additionalSeconds = getElapsedSeconds(updatedTask.trackedStartTime);
-              setElapsedTime((updatedTask.totalTrackedTime || 0) + additionalSeconds);
+              const additionalSeconds = getElapsedSeconds(
+                updatedTask.trackedStartTime
+              );
+              setElapsedTime(
+                (updatedTask.totalTrackedTime || 0) + additionalSeconds
+              );
             } catch (err) {
-              console.error('Error calculating elapsed time:', err);
+              console.error("Error calculating elapsed time:", err);
               setElapsedTime(updatedTask.totalTrackedTime || 0);
             }
           }
@@ -79,17 +91,21 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
           }
         } else if (updatedTask.isTracking) {
           try {
-            const additionalSeconds = getElapsedSeconds(updatedTask.trackedStartTime);
-            setElapsedTime((updatedTask.totalTrackedTime || 0) + additionalSeconds);
+            const additionalSeconds = getElapsedSeconds(
+              updatedTask.trackedStartTime
+            );
+            setElapsedTime(
+              (updatedTask.totalTrackedTime || 0) + additionalSeconds
+            );
           } catch (err) {
-            console.error('Error calculating elapsed time:', err);
+            console.error("Error calculating elapsed time:", err);
           }
         }
       }
     } catch (error) {
-      console.error('Error refreshing task state:', error);
+      console.error("Error refreshing task state:", error);
     }
-  };
+  }, [loading, onTimeUpdate]);
 
   useEffect(() => {
     if (refreshIntervalRef.current) {
@@ -104,7 +120,7 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
     }, 5000);
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         refreshTaskState();
       }
     };
@@ -112,91 +128,101 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
     const handleFocus = () => {
       refreshTaskState();
     };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleFocus);
-    
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+
     return () => {
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
         refreshIntervalRef.current = null;
       }
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
     };
-  }, [task.id]);
+  }, [refreshTaskState]);
 
   useEffect(() => {
     if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
 
     if (isTracking) {
       timerRef.current = setInterval(() => {
         try {
-          const currentTask = taskRef.current
+          const currentTask = taskRef.current;
           if (currentTask && currentTask.trackedStartTime) {
-            const additionalSeconds = getElapsedSeconds(currentTask.trackedStartTime)
-            setElapsedTime((currentTask.totalTrackedTime || 0) + additionalSeconds)
+            const additionalSeconds = getElapsedSeconds(
+              currentTask.trackedStartTime
+            );
+            setElapsedTime(
+              (currentTask.totalTrackedTime || 0) + additionalSeconds
+            );
           }
         } catch (error) {
-          console.error('Error updating timer:', error)
+          console.error("Error updating timer:", error);
         }
-      }, 1000)
+      }, 1000);
 
       try {
-        const additionalSeconds = getElapsedSeconds(task.trackedStartTime)
-        setElapsedTime((task.totalTrackedTime || 0) + additionalSeconds)
+        const additionalSeconds = getElapsedSeconds(task.trackedStartTime);
+        setElapsedTime((task.totalTrackedTime || 0) + additionalSeconds);
       } catch (error) {
-        console.error('Error setting initial elapsed time:', error)
+        console.error("Error setting initial elapsed time:", error);
       }
     }
 
     return () => {
       if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
-    }
-  }, [isTracking])
+    };
+  }, [isTracking, task.totalTrackedTime, task.trackedStartTime]);
 
   useEffect(() => {
     if (isTracking !== task.isTracking) {
-      setIsTracking(task.isTracking)
+      setIsTracking(task.isTracking);
     }
-    
+
     try {
       if (!task.isTracking) {
-        setElapsedTime(task.totalTrackedTime || 0)
+        setElapsedTime(task.totalTrackedTime || 0);
       } else {
-        const additionalSeconds = getElapsedSeconds(task.trackedStartTime)
-        setElapsedTime((task.totalTrackedTime || 0) + additionalSeconds)
+        const additionalSeconds = getElapsedSeconds(task.trackedStartTime);
+        setElapsedTime((task.totalTrackedTime || 0) + additionalSeconds);
       }
     } catch (error) {
-      console.error('Error updating elapsed time:', error)
-      setElapsedTime(task.totalTrackedTime || 0)
+      console.error("Error updating elapsed time:", error);
+      setElapsedTime(task.totalTrackedTime || 0);
     }
-  }, [task, task.isTracking, task.totalTrackedTime, task.trackedStartTime])
+  }, [
+    task,
+    task.isTracking,
+    task.totalTrackedTime,
+    task.trackedStartTime,
+    isTracking,
+  ]);
 
   const handleStartTracking = async () => {
     try {
       if (loading) return;
-      
+
       setLoading(true);
-      
+
       const response = await fetch(`/api/tasks/${task.id}/time-tracking`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ action: 'start' }),
-        cache: 'no-store',
+        body: JSON.stringify({ action: "start" }),
+        cache: "no-store",
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to start time tracking');
+        throw new Error(errorData.error || "Failed to start time tracking");
       }
 
       const updatedTask = await response.json();
@@ -205,63 +231,65 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
       taskRef.current = updatedTask;
 
       try {
-        const additionalSeconds = getElapsedSeconds(updatedTask.trackedStartTime);
+        const additionalSeconds = getElapsedSeconds(
+          updatedTask.trackedStartTime
+        );
         setElapsedTime((updatedTask.totalTrackedTime || 0) + additionalSeconds);
       } catch (err) {
-        console.error('Error calculating initial elapsed time:', err);
+        console.error("Error calculating initial elapsed time:", err);
         setElapsedTime(updatedTask.totalTrackedTime || 0);
       }
-      
+
       // Notify parent component
       if (onTimeUpdate) {
         onTimeUpdate(updatedTask);
       }
-      
-      toast.success('Time tracking started');
+
+      toast.success("Time tracking started");
     } catch (error) {
-      console.error('Error starting time tracking:', error);
-      toast.error('Failed to start time tracking');
+      console.error("Error starting time tracking:", error);
+      toast.error("Failed to start time tracking");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const handleStopClick = () => {
-    setShowStopDialog(true)
-  }
+    setShowStopDialog(true);
+  };
 
   const handleCancelStop = () => {
-    setShowStopDialog(false)
-    setDescription('')
-  }
+    setShowStopDialog(false);
+    setDescription("");
+  };
 
   const handleStopTracking = async () => {
     try {
       if (loading) return;
-      
+
       setLoading(true);
 
-      const requestBody = { 
-        action: 'stop',
-        description: ''
+      const requestBody = {
+        action: "stop",
+        description: "",
       };
 
       if (description.trim()) {
-        requestBody['description'] = description.trim();
+        requestBody["description"] = description.trim();
       }
-      
+
       const response = await fetch(`/api/tasks/${task.id}/time-tracking`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),
-        cache: 'no-store',
+        cache: "no-store",
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to stop time tracking');
+        throw new Error(errorData.error || "Failed to stop time tracking");
       }
 
       const updatedTask = await response.json();
@@ -279,17 +307,17 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
       if (onTimeUpdate) {
         onTimeUpdate(updatedTask);
       }
-      
-      toast.success('Time tracking stopped');
+
+      toast.success("Time tracking stopped");
       setShowStopDialog(false);
-      setDescription('');
+      setDescription("");
 
       setTimeout(() => {
         refreshTaskState();
       }, 500);
     } catch (error) {
-      console.error('Error stopping time tracking:', error);
-      toast.error('Failed to stop time tracking');
+      console.error("Error stopping time tracking:", error);
+      toast.error("Failed to stop time tracking");
 
       setTimeout(() => {
         refreshTaskState();
@@ -297,7 +325,7 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -306,14 +334,14 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
           <Clock size={14} />
           <span>{formatTime(elapsedTime)}</span>
         </div>
-        
+
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
                 {isTracking ? (
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     size="sm"
                     onClick={handleStopClick}
                     disabled={loading}
@@ -323,14 +351,14 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
                     Stop
                   </Button>
                 ) : (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={handleStartTracking}
                     disabled={loading}
                     className="h-5 px-1 rounded-none text-base-content"
                   >
-                    <Play size={14} className={'text-green-600'}/>
+                    <Play size={14} className={"text-green-600"} />
                     Start
                   </Button>
                 )}
@@ -339,7 +367,10 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
             <TooltipContent side="top">
               <div className="flex items-center gap-1 max-w-xs">
                 <AlertCircle size={14} className="text-amber-500" />
-                <p className="text-xs">Starting task time tracking will stop any active project timer.</p>
+                <p className="text-xs">
+                  Starting task time tracking will stop any active project
+                  timer.
+                </p>
               </div>
             </TooltipContent>
           </Tooltip>
@@ -354,7 +385,7 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
               Add a description of what you worked on (optional)
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <Label htmlFor="description" className="text-sm font-medium">
               Description
@@ -367,9 +398,13 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
               className="mt-2"
             />
           </div>
-          
+
           <DialogFooter>
-            <Button variant="outline" onClick={handleCancelStop} disabled={loading}>
+            <Button
+              variant="outline"
+              onClick={handleCancelStop}
+              disabled={loading}
+            >
               Cancel
             </Button>
             <Button onClick={handleStopTracking} disabled={loading}>
@@ -380,5 +415,5 @@ export default function TaskTimeTracker({ task, onTimeUpdate }: TaskTimeTrackerP
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

@@ -18,19 +18,19 @@ export async function GET(
 
     // Get all tasks for this project
     const tasks = await db.task.findMany({
-      where: { 
-        projectId 
+      where: {
+        projectId,
       },
       select: {
         id: true,
         name: true,
         description: true,
         totalTrackedTime: true,
-        isTracking: true
+        isTracking: true,
       },
       orderBy: {
-        name: 'asc'
-      }
+        name: "asc",
+      },
     });
 
     return NextResponse.json(tasks);

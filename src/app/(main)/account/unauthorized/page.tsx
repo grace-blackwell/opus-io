@@ -1,9 +1,7 @@
 import Unauthorized from "@/components/unauthorized";
 import React from "react"
 
-type Props = {}
-
-const Page = (props: Props) => {
+const Page = () => {
 	return <Unauthorized/>
 }
 

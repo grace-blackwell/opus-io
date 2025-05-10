@@ -10,93 +10,111 @@ import { z } from "zod";
 import Loading from "../global/loading";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 interface CreateKanbanFormProps {
-    defaultData?: Kanban;
-    accountId: string;
+  defaultData?: Kanban;
+  accountId: string;
 }
 
 const CreateKanbanFormSchema = z.object({
-    name: z.string().min(1),
+  name: z.string().min(1),
 });
 
-const CreateKanbanForm: React.FC<CreateKanbanFormProps> = ({ defaultData, accountId }) => {
-    const { setClose } = useModal();
-    const router = useRouter();
+const CreateKanbanForm: React.FC<CreateKanbanFormProps> = ({
+  defaultData,
+  accountId,
+}) => {
+  const { setClose } = useModal();
+  const router = useRouter();
 
-    const form = useForm<z.infer<typeof CreateKanbanFormSchema>>({
-        mode: "onChange",
-        resolver: zodResolver(CreateKanbanFormSchema),
-        defaultValues: {
-            name: defaultData?.name || "",
-        },
-    });
+  const form = useForm<z.infer<typeof CreateKanbanFormSchema>>({
+    mode: "onChange",
+    resolver: zodResolver(CreateKanbanFormSchema),
+    defaultValues: {
+      name: defaultData?.name || "",
+    },
+  });
 
-    useEffect(() => {
-        if (defaultData) {
-            form.reset({
-                name: defaultData?.name || "",
-            });
-        }
-    }, [defaultData]);
+  useEffect(() => {
+    if (defaultData) {
+      form.reset({
+        name: defaultData?.name || "",
+      });
+    }
+  }, [defaultData, form]);
 
-    const isLoading = form.formState.isLoading;
+  const isLoading = form.formState.isLoading;
 
-    const onSubmit = async (values: z.infer<typeof CreateKanbanFormSchema>) => {
-        if (!accountId) return;
+  const onSubmit = async (values: z.infer<typeof CreateKanbanFormSchema>) => {
+    if (!accountId) return;
 
-        try {
-            const response = await upsertKanban({
-                ...values,
-                id: defaultData?.id,
-                accountId,
-            });
+    try {
+      const response = await upsertKanban({
+        ...values,
+        id: defaultData?.id,
+        accountId,
+      });
 
-            await saveActivityLogNotification(accountId,`Updated a pipeline | ${response?.name}`);
+      await saveActivityLogNotification(
+        accountId,
+        `Updated a pipeline | ${response?.name}`
+      );
 
-            toast.success("Saved pipeline details");
-            router.refresh();
-        } catch (err) {
-            console.log(err);
-            toast.error('Oops...',{description: "Could not save pipeline details"});
-        }
-        setClose();
-    };
+      toast.success("Saved pipeline details");
+      router.refresh();
+    } catch (err) {
+      console.log(err);
+      toast.error("Oops...", {
+        description: "Could not save pipeline details",
+      });
+    }
+    setClose();
+  };
 
-    return (
-        <Card className="w-full ">
-            <CardHeader>
-                <CardTitle>Kanban Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                        <FormField
-                            disabled={isLoading}
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Kanban Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Name" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+  return (
+    <Card className="w-full ">
+      <CardHeader>
+        <CardTitle>Kanban Details</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-4"
+          >
+            <FormField
+              disabled={isLoading}
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kanban Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                        <Button className="w-20 mt-4" disabled={isLoading} type="submit">
-                            {form.formState.isSubmitting ? <Loading /> : "Save"}
-                        </Button>
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
-    );
+            <Button className="w-20 mt-4" disabled={isLoading} type="submit">
+              {form.formState.isSubmitting ? <Loading /> : "Save"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
 };
 
 export default CreateKanbanForm;

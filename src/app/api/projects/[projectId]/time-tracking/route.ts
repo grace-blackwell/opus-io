@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { startProjectTimeTracking, stopProjectTimeTracking } from "@/lib/queries";
+import {
+  startProjectTimeTracking,
+  stopProjectTimeTracking,
+} from "@/lib/queries";
 
 export async function POST(
   req: NextRequest,

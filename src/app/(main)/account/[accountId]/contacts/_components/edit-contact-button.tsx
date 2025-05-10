@@ -5,18 +5,19 @@ import { Button } from '@/components/ui/button'
 import { useModal } from '@/providers/modal-provider'
 import { Edit } from 'lucide-react'
 import ContactDetails from '@/components/forms/contact-details'
-import { BillingAddress, Contact, ContactTag } from '@prisma/client'
+import { BillingAddress, Contact, ContactTag, Project } from '@prisma/client'
 import CustomModal from "@/components/global/custom-modal"
 import { toast } from 'sonner';
+import { UserWithAccount } from '@/lib/types'
 
 type ContactWithRelations = Contact & {
     BillingAddress?: BillingAddress | null;
     ContactTags?: ContactTag[];
-    projects?: any[];
+    projects?: Project[];
 }
 
 type Props = {
-    user: any
+    user: UserWithAccount
     contactId: string
     size?: "default" | "sm" | "lg" | "icon"
 }
@@ -36,11 +37,11 @@ const EditContactButton = ({ user, contactId, size = "sm" }: Props) => {
                 console.error(`Error ${response.status}: ${errorMessage}`);
                 throw new Error(errorMessage);
             }
-            
+
             const contact: ContactWithRelations = await response.json()
-            
+
             console.log('Fetched contact data:', contact)
-            
+
             // Open the modal with the contact data
             setOpen(<CustomModal title={'Edit Contact'} subheading={''}>
                 <ContactDetails accountData={user.Account} data={contact}/>
@@ -56,7 +57,7 @@ const EditContactButton = ({ user, contactId, size = "sm" }: Props) => {
     }
 
     return (
-        <Button 
+        <Button
             size={size}
             variant={'ghost'}
             className="flex items-center gap-1 w-20 hover:bg-secondary cursor-pointer"

@@ -6,7 +6,7 @@ import { getThemeColors, themeColors } from './theme-colors'
 // Log all available themes for debugging
 console.log('Available themes:', Object.keys(themeColors));
 
-type InvoiceItem = {
+export type InvoiceItem = {
     id: string
     product: string
     description: string
@@ -15,7 +15,7 @@ type InvoiceItem = {
     amount: string
 }
 
-type InvoiceData = {
+export type InvoiceData = {
     invoiceNumber: string | number
     invoiceDate: string | Date
     dueDate: string | Date
@@ -55,7 +55,7 @@ type Props = {
 const createThemedStyles = (theme: string) => {
     console.log('createThemedStyles called with theme:', theme);
     const colors = getThemeColors(theme);
-    
+
     return StyleSheet.create({
         page: {
             padding: 20,
@@ -257,10 +257,10 @@ const createThemedStyles = (theme: string) => {
 
 const ThemedEditorStylePdf = ({ invoice }: Props) => {
     if (!invoice) return null;
-    
+
     // Log the theme we're receiving
     console.log('PDF component received theme:', invoice.theme);
-    
+
     // Log customer details
     console.log('PDF component received customer details:', {
         contactName: invoice.contactName,
@@ -272,33 +272,33 @@ const ThemedEditorStylePdf = ({ invoice }: Props) => {
         contactZip: invoice.contactZip,
         contactCountry: invoice.contactCountry,
     });
-    
+
     // Use the theme from the invoice data
     const themeToUse = invoice.theme || 'default';
     console.log('Using theme from invoice data:', themeToUse);
-    
+
     // Create styles based on the theme
     const styles = createThemedStyles(themeToUse);
-    
+
     const formatCurrency = (amount: string | number) => {
         const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
         if (isNaN(numAmount)) return '';
-        
+
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: invoice.currency || 'USD'
         }).format(numAmount);
     };
-    
+
     const formatDate = (date: string | Date) => {
         if (!date) return '';
         try {
             return format(new Date(date), 'MM/dd/yyyy');
-        } catch (e) {
+        } catch {
             return String(date);
         }
     };
-    
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -319,7 +319,7 @@ const ThemedEditorStylePdf = ({ invoice }: Props) => {
                         <Text style={styles.text}>{invoice.companyWebsite || ''}</Text>
                     </View>
                 </View>
-                
+
                 {/* Invoice Details and Customer Info - Matching editor layout */}
                 <View style={styles.detailsBackground}>
                     <View style={styles.detailsSection}>
@@ -352,7 +352,7 @@ const ThemedEditorStylePdf = ({ invoice }: Props) => {
                         </View>
                     </View>
                 </View>
-                
+
                 {/* Invoice Items Table - Matching editor layout */}
                 <View style={styles.table}>
                     <View style={styles.tableHeader}>
@@ -362,7 +362,7 @@ const ThemedEditorStylePdf = ({ invoice }: Props) => {
                         <Text style={[styles.tableColRate, styles.tableHeaderText]}>Rate</Text>
                         <Text style={[styles.tableColAmount, styles.tableHeaderText]}>Amount</Text>
                     </View>
-                    
+
                     {invoice.items.map((item) => (
                         <View key={item.id} style={styles.tableRow}>
                             <Text style={styles.tableColProduct}>{item.product || ''}</Text>
@@ -373,44 +373,43 @@ const ThemedEditorStylePdf = ({ invoice }: Props) => {
                         </View>
                     ))}
                 </View>
-                
+
                 {/* Totals Section - Matching editor layout */}
                 <View style={styles.totalsSection}>
                     <View style={styles.totalsRow}>
                         <Text style={styles.totalsLabel}>Subtotal</Text>
                         <Text style={styles.totalsValue}>{formatCurrency(invoice.subtotal || '0')}</Text>
                     </View>
-                    
+
                     {invoice.salesTaxRate && parseFloat(String(invoice.salesTaxRate)) > 0 && (
                         <View style={styles.totalsRow}>
                             <Text style={styles.totalsLabel}>
-                                Tax ({typeof invoice.salesTaxRate === 'string' 
-                                    ? parseFloat(invoice.salesTaxRate).toFixed(2) 
+                                Tax ({typeof invoice.salesTaxRate === 'string'
+                                    ? parseFloat(invoice.salesTaxRate).toFixed(2)
                                     : Number(invoice.salesTaxRate).toFixed(2)}%)
                             </Text>
                             <Text style={styles.totalsValue}>{formatCurrency(invoice.salesTaxAmount || '0')}</Text>
                         </View>
                     )}
-                    
+
                     <View style={styles.totalDueRow}>
                         <Text style={styles.totalDueLabel}>Total</Text>
                         <Text style={styles.totalDueValue}>{formatCurrency(invoice.totalDue || '0')}</Text>
                     </View>
                 </View>
-                
-                {/* Notes and Terms Section - Matching editor layout */}
+
                 <View style={styles.notesTermsSection}>
                     <View style={styles.notesSection}>
                         <Text style={styles.sectionTitle}>Notes</Text>
                         <Text style={styles.text}>{invoice.notes || ''}</Text>
                     </View>
-                    
+
                     <View style={styles.termsSection}>
                         <Text style={styles.sectionTitle}>Terms</Text>
                         <Text style={styles.text}>{invoice.terms || ''}</Text>
                     </View>
                 </View>
-                
+
                 {/* Footer */}
                 <View style={styles.footer}>
                     <Text>Thank you for your business!</Text>

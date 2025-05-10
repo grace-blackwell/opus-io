@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { deleteContact, saveActivityLogNotification } from '@/lib/queries'
+import { deleteContact } from '@/lib/queries'
 import { toast } from 'sonner'
 
 type Props = {
@@ -16,7 +16,7 @@ const DeleteButton = ({ contactId }: Props) => {
         try {
             const response = await deleteContact(contactId)
             if (!response) throw new Error('Failed to delete contact')
-            
+
             toast.success('Contact deleted successfully')
             router.refresh()
         } catch (error) {

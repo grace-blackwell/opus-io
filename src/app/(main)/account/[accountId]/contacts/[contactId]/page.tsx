@@ -6,6 +6,7 @@ import { Mail, Phone, Globe, MapPin } from 'lucide-react'
 import EditContactButton from '../_components/edit-contact-button'
 import ContactTagDisplay from '@/components/global/contact-tag-display'
 import {Badge} from "@/components/ui/badge";
+import { UserWithAccount } from '@/lib/types'
 
 type Props = {
   params: { accountId: string; contactId: string }
@@ -13,8 +14,11 @@ type Props = {
 
 const ContactPage = async ({ params }: Props) => {
   const parameters = await params;
-  const user = await getAuthUserDetails()
-  if (!user || !user.Account) return null
+  const userData = await getAuthUserDetails()
+  if (!userData || !userData.Account) return null
+
+  // Type assertion to ensure userData matches UserWithAccount type
+  const user = userData as UserWithAccount
 
   const contact = await db.contact.findUnique({
     where: {
@@ -31,7 +35,7 @@ const ContactPage = async ({ params }: Props) => {
       invoices: true
     }
   })
-  
+
   console.log('Contact data:', JSON.stringify({
     id: contact?.id,
     contactName: contact?.contactName,
@@ -51,9 +55,9 @@ const ContactPage = async ({ params }: Props) => {
               const isCustomColor = tag.color.startsWith('CUSTOM:');
               const colorHex = isCustomColor ? tag.color.split(':')[1] : undefined;
               const colorName = isCustomColor ? 'CUSTOM' : tag.color;
-              
+
               return (
-                <ContactTagDisplay 
+                <ContactTagDisplay
                   key={tag.id}
                   title={tag.name}
                   colorName={colorName}
@@ -63,7 +67,7 @@ const ContactPage = async ({ params }: Props) => {
             })}
           </div>
         </div>
-        <EditContactButton 
+        <EditContactButton
           user={user}
           contactId={contact.id}
         />
@@ -151,7 +155,7 @@ const ContactPage = async ({ params }: Props) => {
                 <div key={invoice.id} className="p-4 border rounded-md">
                   <div className="flex justify-between items-center">
                     <h3 className="font-medium">Invoice #{invoice.invoiceNumber.toString()}</h3>
-                    <Badge 
+                    <Badge
                       variant={invoice.paymentStatus === 'Paid' ? 'default' : 'destructive'}
                     >
                       {invoice.paymentStatus}

@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
-type Props = {}
+const InvoiceIdPage = () => {
+  return <div>Invoice Id Page</div>;
+};
 
-const InvoiceIdPage = (props: Props) => {
-    return (
-        <div>Invoice Id Page</div>
-    )
-}
-
-export default InvoiceIdPage
+export default InvoiceIdPage;
