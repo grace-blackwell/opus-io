@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import {
   getAuthUserDetails,
   getLanesWithTasksAndTags,
-  getDiagrams,
   updateLanesOrder,
   updateTasksOrder,
 } from "@/lib/queries";
@@ -33,7 +32,7 @@ import { LaneDetail } from "@/lib/types";
 import ProjectTimeTrackerWrapper from "./_components/project-time-tracker-wrapper";
 import ProjectTimeEntries from "./_components/project-time-entries";
 import ProjectGanttChart from "./_components/project-gantt-chart";
-import ProjectDiagrams from "./_components/project-diagrams";
+import ProjectEditor from "./_components/project-editor";
 
 type Props = {
   params: {
@@ -47,6 +46,7 @@ type Props = {
 
 const ProjectDetailsPage = async ({ params, searchParams }: Props) => {
   const parameters = await params;
+  const searchParameters = await searchParams;
   const user = await getAuthUserDetails();
   if (!user || !user.Account) return null;
 
@@ -102,9 +102,6 @@ const ProjectDetailsPage = async ({ params, searchParams }: Props) => {
   // Get lanes with tasks and tags
   const lanes = (await getLanesWithTasksAndTags(kanbanId)) as LaneDetail[];
 
-  // Get diagrams for this project
-  const diagrams = await getDiagrams(parameters.projectId);
-
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex justify-between items-center">
@@ -123,7 +120,7 @@ const ProjectDetailsPage = async ({ params, searchParams }: Props) => {
         </Link>
       </div>
 
-      <Tabs defaultValue={searchParams.tab || "details"} className="w-full">
+      <Tabs defaultValue={searchParameters.tab || "details"} className="w-full">
         <TabsList className="mb-4 rounded-none bg-background">
           <TabsTrigger value="details">
             {" "}
@@ -268,6 +265,18 @@ const ProjectDetailsPage = async ({ params, searchParams }: Props) => {
                   )}
                 </CardContent>
               </Card>
+
+              <Card className={"border-none rounded-none"}>
+                <CardHeader>
+                  <CardTitle>Project Notes</CardTitle>
+                  <CardDescription>
+                    Add and edit notes for this project
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ProjectEditor />
+                </CardContent>
+              </Card>
             </div>
             <div className="col-span-1 space-y-6">
               <ProjectTimeTrackerWrapper project={project} />
@@ -312,13 +321,7 @@ const ProjectDetailsPage = async ({ params, searchParams }: Props) => {
 
         <TabsContent value="diagrams">
           <Card className={"border-none rounded-none"}>
-            <CardContent className="pt-4">
-              <ProjectDiagrams
-                diagrams={diagrams || []}
-                accountId={parameters.accountId}
-                projectId={parameters.projectId}
-              />
-            </CardContent>
+            <CardContent className="pt-4"></CardContent>
           </Card>
         </TabsContent>
       </Tabs>

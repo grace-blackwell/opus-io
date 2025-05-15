@@ -1,95 +1,83 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import { PDFViewer } from '@react-pdf/renderer'
-import ThemedEditorStylePdf, { InvoiceData } from './themed-editor-style-pdf'
-import { useColorTheme } from '@/providers/color-theme-provider'
+import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { InvoiceData } from "./themed-editor-style-pdf";
+import { useColorTheme } from "@/providers/color-theme-provider";
+
+// Dynamically import PDFPreview with no SSR to avoid hydration issues
+const PDFPreview = dynamic(() => import("./pdf-preview"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center w-full h-full">
+      <p>Loading PDF viewer...</p>
+    </div>
+  ),
+});
 
 type Props = {
-    invoiceData: InvoiceData
-}
+  invoiceData: InvoiceData;
+};
+
+// Map FlyonUI themes to theme-colors.ts compatibility
+const mapTheme = (colorTheme: string): string => {
+  switch (colorTheme) {
+    case "opus":
+    case "opusdark":
+      return "default";
+    case "corporate":
+    case "mintlify":
+    case "shadcn":
+    case "ocean":
+      return "blue";
+    case "ghibli":
+    case "gourmet":
+    case "valorant":
+      return "red";
+    case "luxury":
+    case "forest":
+      return "green";
+    case "slack":
+    case "valentine":
+      return "pink";
+    case "soft":
+    case "caramellatte":
+      return "orange";
+    case "synthwave":
+    case "black":
+    case "coffee":
+      return "default"; // Dark themes use default
+    default:
+      return "default";
+  }
+};
 
 const InvoicePreview = ({ invoiceData }: Props) => {
-    const { colorTheme } = useColorTheme();
-    const [mounted, setMounted] = useState(false);
-    const [key, setKey] = useState(0); // Add a key to force re-render
+  const { colorTheme } = useColorTheme();
+  const [mounted, setMounted] = useState(false);
 
-    // Only execute client-side
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+  // Only execute client-side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-    // Force re-render when invoiceData changes
-    useEffect(() => {
-        if (invoiceData) {
-            setKey(prevKey => prevKey + 1);
-            console.log('Invoice data changed, forcing re-render');
-        }
-    }, [invoiceData]);
+  // Don't render anything until mounted (to avoid hydration mismatch)
+  if (!mounted || !invoiceData) return null;
 
-    // Don't render anything until mounted (to avoid hydration mismatch)
-    if (!mounted || !invoiceData) return null;
+  // Map the theme
+  const mappedTheme = mapTheme(colorTheme);
 
-    // Map FlyonUI themes to theme-colors.ts compatibility
-    let mappedTheme = 'default';
+  // Create the themed invoice data
+  const themedInvoiceData = {
+    ...invoiceData,
+    theme: mappedTheme,
+  };
 
-    // Map FlyonUI themes to our existing theme colors
-    switch(colorTheme) {
-        case 'opus':
-            mappedTheme = 'default';
-            break;
-        case 'opusdark':
-            mappedTheme = 'default';
-            break;
-        case 'corporate':
-        case 'mintlify':
-        case 'shadcn':
-            mappedTheme = 'blue';
-            break;
-        case 'ghibli':
-        case 'gourmet':
-        case 'valorant':
-            mappedTheme = 'red';
-            break;
-        case 'luxury':
-        case 'forest':
-            mappedTheme = 'green';
-            break;
-        case 'slack':
-        case 'valentine':
-            mappedTheme = 'pink';
-            break;
-        case 'soft':
-        case 'caramellatte':
-            mappedTheme = 'orange';
-            break;
-        case 'ocean':
-            mappedTheme = 'blue';
-            break;
-        case 'synthwave':
-        case 'black':
-        case 'coffee':
-            mappedTheme = 'default'; // Dark themes use default
-            break;
-        default:
-            mappedTheme = 'default';
-    }
+  return (
+    <div className="w-full h-[600px] overflow-hidden">
+      <PDFPreview invoiceData={themedInvoiceData} />
+    </div>
+  );
+};
 
-    // Use the current theme from the color theme provider
-    const themedInvoiceData = {
-        ...invoiceData,
-        theme: mappedTheme
-    };
-
-    console.log('Final invoice data with color theme:', themedInvoiceData);
-
-    return (
-        <div className="w-full h-[600px] overflow-hidden">
-            <PDFViewer key={key} width="100%" height="100%" className="border rounded-md">
-                <ThemedEditorStylePdf invoice={themedInvoiceData} />
-            </PDFViewer>
-        </div>
-    )
-}
-
-export default InvoicePreview
+export default InvoicePreview;

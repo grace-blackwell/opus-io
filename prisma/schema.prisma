@@ -52,6 +52,12 @@ enum Plan {
   price_pxzapqw3zkv8lzv
 }
 
+enum Priority {
+  Low
+  Medium
+  High
+}
+
 model User {
   id                    String              @id @default(nanoid())
   accountId             String?             @unique
@@ -87,6 +93,10 @@ model Account {
   zipCode               String
   country               String
   Subscription          Subscription?
+  Calendar              Calendar?
+  ToDoLists             ToDoList[]
+  ToDoTasks             ToDoTask[]
+  CalendarEvents        CalendarEvent[]
   Media                 Media[]
   Diagrams              Diagram[]
   Notifications         Notification[]
@@ -137,7 +147,7 @@ model Diagram {
   id                    String              @id @default(nanoid())
   name                  String
   content               String              @db.Text
-  thumbnail             String?             @db.Text
+  link                  String              @unique
   accountId             String
   projectId             String
   createdAt             DateTime            @default(now())
@@ -147,6 +157,63 @@ model Diagram {
 
   @@index([accountId])
   @@index([projectId])
+}
+
+model Calendar {
+  id                    String              @id @default(nanoid())
+  accountId             String              @unique
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  Account               Account             @relation(fields: [accountId], references: [id])
+  calendarEvents        CalendarEvent[]
+}
+
+model CalendarEvent {
+  id                    String              @id @default(nanoid())
+  title                 String
+  details               String              @db.Text
+  start                 DateTime
+  end                   DateTime
+  allDay                Boolean             @default(false)
+  accountId             String
+  calendarId            String
+  Calendar              Calendar            @relation(fields: [calendarId], references: [id])
+  Account               Account             @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+  @@index([calendarId])
+}
+
+model ToDoList {
+  id                    String              @id @default(nanoid())
+  name                  String              @default("To Do List")
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  accountId             String
+  Account               Account             @relation(fields: [accountId], references: [id])
+  toDoTasks             ToDoTask[]
+
+  @@index([accountId])
+}
+
+model ToDoTask {
+  id                            String              @id @default(nanoid())
+  task                          String
+  completed                     Boolean             @default(false)
+  createdAt                     DateTime            @default(now())
+  updatedAt                     DateTime            @updatedAt
+  deadline                      DateTime?
+  estimatedDurationMinutes      Int?
+  actualDurationMinutes         Int?
+  priority                      Priority            @default(Medium)
+  notes                         String?             @db.Text
+  accountId                     String
+  todoListId                    String
+  Account                       Account             @relation(fields: [accountId], references: [id])
+  ToDoList                      ToDoList            @relation(fields: [todoListId], references: [id])
+
+  @@index([accountId])
+  @@index([todoListId])
 }
 
 model Subscription {
@@ -225,6 +292,7 @@ model Project {
   isTracking            Boolean           @default(false)
   trackedStartTime      DateTime?
   totalTrackedTime      Int               @default(0) // Total tracked time in seconds
+  notes                 String?           @db.Text
 
   @@index([contactId])
   @@index([accountId])

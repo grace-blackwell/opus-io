@@ -14,12 +14,13 @@ type Props = {
 };
 
 const InvoicesPage = async ({ params }: Props) => {
+  const parameters = await params;
   const user = await getAuthUserDetails();
   if (!user || !user.Account) return null;
 
   const invoices = await db.invoice.findMany({
     where: {
-      accountId: params.accountId,
+      accountId: parameters.accountId,
     },
     include: {
       Account: true,
@@ -34,7 +35,7 @@ const InvoicesPage = async ({ params }: Props) => {
 
   const accountDetails = await db.account.findUnique({
     where: {
-      id: params.accountId,
+      id: parameters.accountId,
     },
   });
 
@@ -43,7 +44,7 @@ const InvoicesPage = async ({ params }: Props) => {
   return (
     <div className="flex flex-col">
       <div className="flex flex-wrap gap-4 mb-6">
-        <Link href={`/account/${params.accountId}/invoice-generator`}>
+        <Link href={`/account/${parameters.accountId}/invoice-generator`}>
           <Button variant="default" className="flex gap-2">
             <FileText size={16} />
             Invoice Generator
@@ -54,7 +55,7 @@ const InvoicesPage = async ({ params }: Props) => {
         columns={columns}
         data={invoices}
         filterValue="invoiceNumber"
-        modalChildren={<InvoiceDetails accountId={params.accountId} />}
+        modalChildren={<InvoiceDetails accountId={parameters.accountId} />}
       />
     </div>
   );

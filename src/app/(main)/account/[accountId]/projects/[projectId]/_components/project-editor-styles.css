@@ -1,0 +1,113 @@
+/* Import Quill styles */
+@import "quill/dist/quill.snow.css";
+
+/* Custom styling for Quill toolbar */
+.ql-toolbar.ql-snow {
+  background-color: var(--color-base-100);
+  color: var(--color-base-content);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom-color: var(--color-base-300);
+}
+
+.ql-container.ql-snow {
+  border: none;
+}
+
+/* Style for the editor content area */
+.ql-editor {
+  background-color: var(--color-base-100);
+  color: var(--color-base-content);
+  min-height: 200px;
+}
+
+/* Style for placeholder text */
+.ql-editor.ql-blank::before {
+  color: var(--color-primary); /* text-base-content with opacity */
+  font-style: normal;
+  border: none;
+}
+
+/* Style for dropdown menus */
+.ql-snow .ql-picker-options {
+  background-color: var(--color-base-100);
+}
+
+.ql-snow .ql-picker-options .ql-picker-item {
+  color: var(--color-base-content);
+}
+
+.ql-snow .ql-picker-options .ql-picker-item:hover {
+  color: var(--color-base-content);
+  background-color: var(--color-primary);
+}
+
+/* Force color for specific elements */
+.ql-snow .ql-stroke {
+  stroke: var(--color-base-content) !important;
+  fill: none !important;
+}
+
+.ql-snow .ql-fill {
+  fill: var(--color-base-content) !important;
+  stroke: none !important;
+}
+
+.ql-snow .ql-picker {
+  color: var(--color-base-content) !important;
+}
+
+.ql-snow .ql-picker-label {
+  color: var(--color-base-content) !important;
+}
+
+/* Active states */
+.ql-snow .ql-active .ql-stroke {
+  stroke: var(--color-primary) !important;
+}
+
+.ql-snow .ql-active .ql-fill {
+  fill: var(--color-primary) !important;
+}
+
+.ql-snow .ql-active {
+  color: var(--color-primary) !important;
+}
+
+/* Hover states */
+.ql-snow button:hover .ql-stroke {
+  stroke: var(--color-primary) !important;
+}
+
+.ql-snow button:hover .ql-fill {
+  fill: var(--color-primary) !important;
+}
+
+.ql-snow .ql-picker:hover {
+  color: var(--color-primary) !important;
+}
+
+/* Additional specificity for toolbar buttons */
+.ql-toolbar.ql-snow button {
+  color: var(--color-base-content) !important;
+}
+
+.ql-toolbar.ql-snow button:hover {
+  color: var(--color-primary) !important;
+}
+
+/* Fix for specific button types */
+.ql-toolbar.ql-snow .ql-formats button.ql-bold .ql-stroke,
+.ql-toolbar.ql-snow .ql-formats button.ql-italic .ql-stroke,
+.ql-toolbar.ql-snow .ql-formats button.ql-underline .ql-stroke,
+.ql-toolbar.ql-snow .ql-formats button.ql-header .ql-stroke {
+  stroke: var(--color-base-content) !important;
+}
+
+.ql-toolbar.ql-snow .ql-formats button.ql-bold:hover .ql-stroke,
+.ql-toolbar.ql-snow .ql-formats button.ql-italic:hover .ql-stroke,
+.ql-toolbar.ql-snow .ql-formats button.ql-underline:hover .ql-stroke,
+.ql-toolbar.ql-snow .ql-formats button.ql-header:hover .ql-stroke {
+  stroke: var(--color-primary) !important;
+}
